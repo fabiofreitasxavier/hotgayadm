@@ -14,6 +14,10 @@ export const Route = createRootRoute({
       { title: "HotGay — Comunidade privada" },
       { name: "theme-color", content: "#08060c" },
       { name: "rating", content: "adult" },
+      {
+        name: "description",
+        content: "Prévias gratuitas e vídeos exclusivos para maiores de 18 anos. Conteúdo novo todos os dias.",
+      },
     ],
     links: [
       { rel: "icon", type: "image/jpeg", href: "/logo.jpg" },

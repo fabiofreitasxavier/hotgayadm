@@ -1,15 +1,64 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { Trash2 } from "lucide-react";
+import { Check, Link as LinkIcon, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { CATALOG, findVideo } from "@/data/catalog";
 import { useUploads } from "@/lib/uploads";
 import { posterKey, useStoredMedia, videoKey } from "@/lib/video-store";
 import { VideoCard } from "@/components/video-card";
+import { NotFound } from "@/components/not-found";
 import { TelegramCard } from "@/components/telegram-cta";
 
 export const Route = createFileRoute("/watch/$id")({
+  // Catalog videos get their own tab title and description; local uploads fall back to the site default.
+  head: ({ params }) => {
+    const video = findVideo(params.id);
+    if (!video) return {};
+    return {
+      meta: [
+        { title: `${video.title} — HotGay` },
+        { name: "description", content: video.description },
+      ],
+    };
+  },
   component: Watch,
 });
+
+/** Clipboard API first; the legacy execCommand path covers browsers that block it. */
+async function copyText(text: string): Promise<boolean> {
+  try {
+    await navigator.clipboard.writeText(text);
+    return true;
+  } catch {
+    const area = document.createElement("textarea");
+    area.value = text;
+    area.setAttribute("readonly", "");
+    area.style.position = "fixed";
+    area.style.opacity = "0";
+    document.body.appendChild(area);
+    area.select();
+    const ok = document.execCommand("copy");
+    area.remove();
+    return ok;
+  }
+}
+
+function CopyLinkButton() {
+  const [state, setState] = useState<"idle" | "copied" | "failed">("idle");
+  const copied = state === "copied";
+  return (
+    <button
+      type="button"
+      onClick={async () => {
+        setState((await copyText(window.location.href)) ? "copied" : "failed");
+        setTimeout(() => setState("idle"), 2500);
+      }}
+      className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-[var(--color-line)] px-3 py-1.5 text-sm text-[var(--color-mute)] hover:border-[var(--color-accent)] hover:text-[var(--color-bone)]"
+    >
+      {copied ? <Check className="size-4" /> : <LinkIcon className="size-4" />}
+      {copied ? "Link copiado" : state === "failed" ? "Copie da barra de endereço" : "Copiar link"}
+    </button>
+  );
+}
 
 function Watch() {
   const { id } = Route.useParams();
@@ -23,14 +72,7 @@ function Watch() {
   const [failedSrc, setFailedSrc] = useState<string | null>(null);
 
   if (!video) {
-    return (
-      <main className="mx-auto max-w-3xl px-4 py-16">
-        <h1 className="text-2xl">Vídeo não encontrado</h1>
-        <Link to="/" className="mt-4 inline-block text-[var(--color-accent)]">
-          Voltar para o início
-        </Link>
-      </main>
-    );
+    return <NotFound />;
   }
 
   const src = video.local ? storedSrc : video.src;
@@ -95,20 +137,23 @@ function Watch() {
         </p>
         <div className="mt-1 flex items-start justify-between gap-4">
           <h1 className="font-[family-name:var(--font-display)] text-3xl font-bold">{video.title}</h1>
-          {video.local ? (
-            <button
-              type="button"
-              onClick={() => {
-                if (!window.confirm(`Excluir "${video.title}" deste navegador?`)) return;
-                remove(video.id);
-                navigate({ to: "/" });
-              }}
-              className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-[var(--color-line)] px-3 py-1.5 text-sm text-[var(--color-mute)] hover:border-red-400 hover:text-red-400"
-            >
-              <Trash2 className="size-4" />
-              Excluir
-            </button>
-          ) : null}
+          <div className="flex shrink-0 gap-2">
+            <CopyLinkButton />
+            {video.local ? (
+              <button
+                type="button"
+                onClick={() => {
+                  if (!window.confirm(`Excluir "${video.title}" deste navegador?`)) return;
+                  remove(video.id);
+                  navigate({ to: "/" });
+                }}
+                className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-[var(--color-line)] px-3 py-1.5 text-sm text-[var(--color-mute)] hover:border-red-400 hover:text-red-400"
+              >
+                <Trash2 className="size-4" />
+                Excluir
+              </button>
+            ) : null}
+          </div>
         </div>
         <p className="mt-2 text-sm text-[var(--color-mute)]">
           {[video.creator, video.views && `${video.views} visualizações`, video.duration].filter(Boolean).join(" · ")}

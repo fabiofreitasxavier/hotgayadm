@@ -1,5 +1,5 @@
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
-import { Search, Upload } from "lucide-react";
+import { Search } from "lucide-react";
 import { useEffect, useState } from "react";
 import { BRAND } from "@/lib/brand";
 import { TelegramButton } from "@/components/telegram-cta";
@@ -39,14 +39,6 @@ export function SiteHeader() {
             aria-label="Buscar vídeos"
           />
         </form>
-        <Link
-          to="/upload"
-          aria-label="Enviar vídeo"
-          className="inline-flex items-center gap-2 rounded-full border border-[var(--color-line)] p-2 text-sm text-[var(--color-mute)] hover:text-[var(--color-bone)] lg:px-3"
-        >
-          <Upload className="size-4" />
-          <span className="hidden lg:inline">Enviar</span>
-        </Link>
         {/* Phones get the fixed bottom bar instead, so the search box keeps its width. */}
         <div className="hidden shrink-0 sm:block">
           <TelegramButton label="Entrar no Telegram" />

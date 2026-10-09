@@ -1,11 +1,13 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import type { ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { CATALOG, CATEGORIES } from "@/data/catalog";
 import { useUploads } from "@/lib/uploads";
 import { VideoCard } from "@/components/video-card";
 import { PromoHero, TelegramCard } from "@/components/telegram-cta";
 
 type Search = { q?: string; cat?: string };
+
+const PAGE_SIZE = 24;
 
 export const Route = createFileRoute("/")({
   validateSearch: (search: Record<string, unknown>): Search => ({
@@ -33,6 +35,11 @@ function Home() {
   // Keep the hero for the landing view; searches and category filters go straight to results.
   const showHero = !q && !cat;
 
+  // Render the grid a page at a time; a new search or category starts from the first page.
+  const [shown, setShown] = useState(PAGE_SIZE);
+  useEffect(() => setShown(PAGE_SIZE), [q, cat]);
+  const visible = filtered.slice(0, shown);
+
   return (
     <main className="mx-auto max-w-6xl px-4 py-6">
       {showHero ? (
@@ -41,9 +48,14 @@ function Home() {
         </div>
       ) : null}
 
-      <h2 className="mb-3 font-[family-name:var(--font-display)] text-2xl font-extrabold tracking-wide uppercase">
-        {q ? `Resultados para “${q}”` : "Prévias gratuitas"}
-      </h2>
+      <div className="mb-3 flex items-baseline justify-between gap-4">
+        <h2 className="font-[family-name:var(--font-display)] text-2xl font-extrabold tracking-wide uppercase">
+          {q ? `Resultados para “${q}”` : "Vídeos"}
+        </h2>
+        <p className="shrink-0 text-sm text-[var(--color-mute)]">
+          {filtered.length} {filtered.length === 1 ? "vídeo" : "vídeos"}
+        </p>
+      </div>
 
       {/* Only worth showing once there is more than one real category. */}
       <nav className={CATEGORIES.length > 2 ? "mb-6 flex gap-2 overflow-x-auto pb-1" : "hidden"}>
@@ -68,15 +80,37 @@ function Home() {
       </nav>
 
       {filtered.length === 0 ? (
-        <p className="text-[var(--color-mute)]">Nada encontrado para essa busca.</p>
-      ) : (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {filtered.map((video, i) => (
-            <VideoSlot key={video.id} index={i}>
-              <VideoCard video={video} />
-            </VideoSlot>
-          ))}
+        <div className="rounded-2xl border border-[var(--color-line)] bg-[var(--color-panel)] px-6 py-12 text-center">
+          <p className="font-[family-name:var(--font-display)] text-xl font-bold uppercase">Nada encontrado</p>
+          <p className="mt-1 text-sm text-[var(--color-mute)]">Tente outra palavra ou veja todos os vídeos.</p>
+          <Link to="/" className="mt-4 inline-block text-sm text-[var(--color-accent-hi)] underline">
+            Ver todos os vídeos
+          </Link>
         </div>
+      ) : (
+        <>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {visible.map((video, i) => (
+              <VideoSlot key={video.id} index={i}>
+                <VideoCard video={video} />
+              </VideoSlot>
+            ))}
+          </div>
+          {shown < filtered.length ? (
+            <div className="mt-8 flex flex-col items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setShown((n) => n + PAGE_SIZE)}
+                className="rounded-full border border-[var(--color-line)] bg-[var(--color-panel)] px-6 py-2.5 text-sm font-semibold hover:border-[var(--color-accent)]"
+              >
+                Carregar mais
+              </button>
+              <p className="text-xs text-[var(--color-mute)]">
+                Mostrando {visible.length} de {filtered.length}
+              </p>
+            </div>
+          ) : null}
+        </>
       )}
     </main>
   );
