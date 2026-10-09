@@ -19,12 +19,13 @@ export type Video = {
 
 // Preview clips and thumbnails are NOT stored in this repo or deployed with the site.
 // `node scripts/make-previews.mjs` builds them (and updates videos.json); upload that
-// folder's files to the root of the Bunny CDN. VITE_MEDIA_BASE_URL overrides the host at
-// build time. In dev, /videos is served from public/videos, which is git-ignored.
+// folder's files to the root of the Bunny CDN. In dev, /videos is served from
+// public/videos, which is git-ignored.
+//
+// The host is a constant on purpose: VITE_* env values are inlined into the public JS
+// bundle, so a wrong value pasted in Vercel (a token, a connection string) would leak.
 export const MEDIA_HOST = "https://hotgay.b-cdn.net";
-const MEDIA_BASE =
-  (import.meta.env.VITE_MEDIA_BASE_URL as string | undefined)?.replace(/\/$/, "") ||
-  (import.meta.env.DEV ? "/videos" : MEDIA_HOST);
+const MEDIA_BASE = import.meta.env.DEV ? "/videos" : MEDIA_HOST;
 
 const PREVIEWS = "Prévias";
 
