@@ -1,5 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { Trash2 } from "lucide-react";
+import { useState } from "react";
 import { CATALOG, findVideo } from "@/data/catalog";
 import { useUploads } from "@/lib/uploads";
 import { posterKey, useStoredMedia, videoKey } from "@/lib/video-store";
@@ -18,6 +19,8 @@ function Watch() {
   const video = findVideo(id, mine);
   const storedSrc = useStoredMedia(video?.local ? videoKey(video.id) : null);
   const storedPoster = useStoredMedia(video?.local ? posterKey(video.id) : null);
+  // The src that failed to load; keyed so moving to another video resets it.
+  const [failedSrc, setFailedSrc] = useState<string | null>(null);
 
   if (!video) {
     return (
@@ -53,12 +56,32 @@ function Watch() {
             referrerPolicy="strict-origin-when-cross-origin"
             className="aspect-video w-full rounded-xl border-0 bg-black"
           />
+        ) : src && failedSrc === src ? (
+          <div className="flex aspect-video w-full flex-col items-center justify-center gap-3 rounded-xl border border-[var(--color-line)] bg-black px-6 text-center">
+            <p className="font-[family-name:var(--font-display)] text-2xl font-bold uppercase">Prévia indisponível</p>
+            <p className="max-w-sm text-sm text-[var(--color-mute)]">
+              Não conseguimos carregar este vídeo agora. Tente novamente em alguns minutos ou escolha outra prévia.
+            </p>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={() => setFailedSrc(null)}
+                className="rounded-full border border-[var(--color-line)] px-4 py-2 text-sm hover:border-[var(--color-accent)]"
+              >
+                Tentar de novo
+              </button>
+              <Link to="/" className="rounded-full bg-[var(--color-accent)] px-4 py-2 text-sm font-semibold text-white">
+                Ver outras prévias
+              </Link>
+            </div>
+          </div>
         ) : src ? (
           <video
             key={src}
             controls
             playsInline
             poster={poster}
+            onError={() => setFailedSrc(src)}
             className="aspect-video w-full rounded-xl bg-black"
             src={src}
           />

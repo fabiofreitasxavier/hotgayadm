@@ -1,4 +1,5 @@
 import { ArrowRight, BadgeCheck, Gift, Lock, RefreshCw, Send, ShieldCheck, UploadCloud, Users } from "lucide-react";
+import { Link } from "@tanstack/react-router";
 import type { ReactNode } from "react";
 import { BRAND } from "@/lib/brand";
 
@@ -162,7 +163,18 @@ export function SiteFooter() {
           Entre na comunidade privada pelo nosso bot do Telegram e libere {BRAND.videoCount} vídeos exclusivos.
         </p>
         <TelegramButton label="Acessar o bot do Telegram" className="px-6 py-3 text-base" />
-        <p className="mt-6 text-xs text-[var(--color-mute)]">
+        <nav className="mt-6 flex flex-wrap justify-center gap-x-5 gap-y-2 text-sm text-[var(--color-mute)]">
+          <Link to="/termos" className="hover:text-[var(--color-bone)]">
+            Termos de Uso
+          </Link>
+          <Link to="/privacidade" className="hover:text-[var(--color-bone)]">
+            Privacidade
+          </Link>
+          <Link to="/denuncia" className="hover:text-[var(--color-bone)]">
+            Denúncia e Remoção
+          </Link>
+        </nav>
+        <p className="text-xs text-[var(--color-mute)]">
           © {BRAND.name}. Conteúdo adulto, somente para maiores de 18 anos. Todas as pessoas retratadas tinham 18 anos ou
           mais no momento da gravação.
         </p>

@@ -5,4 +5,6 @@ export const BRAND = {
   telegramUrl: "https://beacons.ai/admhotgay",
   price: "9,99",
   videoCount: "800+",
+  /** Public address for legal requests, reports and takedowns. Set before launch. */
+  contactEmail: "",
 } as const;
