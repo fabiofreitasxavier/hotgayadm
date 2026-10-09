@@ -207,9 +207,10 @@ export function readGrokProjectId() {
   return String(fromProcess ?? "").trim();
 }
 
+// Self-hosted outside Grok: the "Created with Grok" badge is opt-in (VITE_GROK_EXTENSIONS=1).
 export function readGrokExtensionsEnabled() {
   const fromProcess = typeof process !== "undefined" ? process.env?.VITE_GROK_EXTENSIONS : "";
-  return String(fromProcess ?? "").trim() !== "0";
+  return String(fromProcess ?? "").trim() === "1";
 }
 
 export function readXCreator() {

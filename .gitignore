@@ -6,3 +6,6 @@ node_modules/
 
 # Video files are hosted externally; local preview links them here. Never commit.
 public/videos
+
+# Build output: Vercel rebuilds on every deploy.
+.vercel
