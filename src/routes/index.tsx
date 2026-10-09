@@ -1,7 +1,9 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import type { ReactNode } from "react";
 import { CATALOG, CATEGORIES } from "@/data/catalog";
 import { useUploads } from "@/lib/uploads";
 import { VideoCard } from "@/components/video-card";
+import { PromoHero, TelegramCard } from "@/components/telegram-cta";
 
 type Search = { q?: string; cat?: string };
 
@@ -28,17 +30,20 @@ function Home() {
     return catOk && textOk;
   });
 
+  // Keep the hero for the landing view; searches and category filters go straight to results.
+  const showHero = !q && !cat;
+
   return (
-    <main className="mx-auto max-w-6xl px-4 py-8">
-      <section className="mb-8 max-w-2xl">
-        <p className="text-xs tracking-[0.2em] text-[var(--color-copper)] uppercase">Public library</p>
-        <h1 className="mt-2 font-[family-name:var(--font-display)] text-4xl leading-tight sm:text-5xl">
-          Host films you own. Watch them anywhere.
-        </h1>
-        <p className="mt-3 text-[var(--color-mute)]">
-          A general video library. Sample films stream from public test files. Uploads stay in this browser until you wire storage.
-        </p>
-      </section>
+    <main className="mx-auto max-w-6xl px-4 py-6">
+      {showHero ? (
+        <div className="mb-10">
+          <PromoHero />
+        </div>
+      ) : null}
+
+      <h2 className="mb-3 font-[family-name:var(--font-display)] text-2xl font-extrabold tracking-wide uppercase">
+        {q ? `Resultados para “${q}”` : "Prévias gratuitas"}
+      </h2>
 
       <nav className="mb-6 flex gap-2 overflow-x-auto pb-1">
         {CATEGORIES.map((name) => {
@@ -51,25 +56,38 @@ function Home() {
               className={
                 "shrink-0 rounded-full border px-3 py-1.5 text-sm " +
                 (active
-                  ? "border-[var(--color-copper)] bg-[var(--color-copper)] text-[#1a1008]"
+                  ? "border-[var(--color-accent)] bg-[var(--color-accent)] text-white shadow-[var(--glow)]"
                   : "border-[var(--color-line)] text-[var(--color-mute)]")
               }
             >
-              {name}
+              {name === "All" ? "Todos" : name}
             </Link>
           );
         })}
       </nav>
 
       {filtered.length === 0 ? (
-        <p className="text-[var(--color-mute)]">Nothing matches that search.</p>
+        <p className="text-[var(--color-mute)]">Nada encontrado para essa busca.</p>
       ) : (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {filtered.map((video) => (
-            <VideoCard key={video.id} video={video} />
+          {filtered.map((video, i) => (
+            <VideoSlot key={video.id} index={i}>
+              <VideoCard video={video} />
+            </VideoSlot>
           ))}
         </div>
       )}
     </main>
+  );
+}
+
+// Drops the Telegram card into the grid after the first row of videos.
+function VideoSlot({ index, children }: { index: number; children: ReactNode }) {
+  if (index !== 3) return <>{children}</>;
+  return (
+    <>
+      <TelegramCard />
+      {children}
+    </>
   );
 }

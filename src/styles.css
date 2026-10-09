@@ -1,14 +1,16 @@
 @import "tailwindcss";
 
 @theme {
-  --font-sans: "IBM Plex Sans", "Segoe UI", sans-serif;
-  --font-display: "Fraunces", Georgia, serif;
-  --color-ink: #12110f;
-  --color-panel: #1c1a17;
-  --color-line: #2e2a24;
-  --color-bone: #f4efe6;
-  --color-mute: #a79b8c;
-  --color-copper: #d07a3a;
+  --font-sans: "Barlow", "Segoe UI", sans-serif;
+  --font-display: "Barlow Condensed", "Arial Narrow", sans-serif;
+  --color-ink: #08060c;
+  --color-panel: #120c1c;
+  --color-line: #2a1c3f;
+  --color-bone: #f6f2ff;
+  --color-mute: #a99bbf;
+  --color-accent: #9333ea;
+  --color-accent-hi: #c084fc;
+  --glow: 0 0 22px rgba(168, 85, 247, 0.35);
 }
 
 @layer base {

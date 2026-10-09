@@ -2,6 +2,8 @@ import { createRootRoute, HeadContent, Outlet, Scripts } from "@tanstack/react-r
 import { AuthProvider } from "@/lib/auth/provider";
 import { PreviewHostBridge } from "@/components/preview-host-bridge";
 import { SiteHeader } from "@/components/site-header";
+import { AgeGate } from "@/components/age-gate";
+import { MobileCtaBar, SiteFooter } from "@/components/telegram-cta";
 import appCss from "../styles.css?url";
 
 export const Route = createRootRoute({
@@ -9,23 +11,24 @@ export const Route = createRootRoute({
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Lumen — video hosting" },
-      { name: "theme-color", content: "#12110f" },
+      { title: "HotGay — Comunidade privada" },
+      { name: "theme-color", content: "#08060c" },
+      { name: "rating", content: "adult" },
     ],
     links: [
-      { rel: "icon", type: "image/svg+xml", href: "/favicon.svg" },
+      { rel: "icon", type: "image/jpeg", href: "/logo.jpg" },
       { rel: "stylesheet", href: appCss },
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       {
         rel: "stylesheet",
-        href: "https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,560&family=IBM+Plex+Sans:wght@400;500;600&display=swap",
+        href: "https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,600;0,700;0,800;1,800&family=Barlow:wght@400;500;600&display=swap",
       },
       { rel: "manifest", href: "/__grok/manifest.webmanifest" },
       { rel: "apple-touch-icon", href: "/__grok/icon-180.png" },
     ],
   }),
   component: () => (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="pt-BR" suppressHydrationWarning>
       <head>
         <HeadContent />
       </head>
@@ -34,6 +37,9 @@ export const Route = createRootRoute({
         <AuthProvider>
           <SiteHeader />
           <Outlet />
+          <SiteFooter />
+          <MobileCtaBar />
+          <AgeGate />
         </AuthProvider>
         <Scripts />
       </body>
