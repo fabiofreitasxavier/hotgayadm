@@ -1,3 +1,5 @@
+import videos from "./videos.json";
+
 export type Video = {
   id: string;
   title: string;
@@ -13,57 +15,25 @@ export type Video = {
 
 export const CATEGORIES = ["All", "Prévias"] as const;
 
-// Video files are NOT stored in this repo or deployed with the site. They live on a
-// video host (e.g. Bunny.net Stream / an adult-friendly CDN); set VITE_MEDIA_BASE_URL to
-// that host's folder URL at build time. Locally, /videos is served from public/videos,
-// which is git-ignored.
+// Preview clips and thumbnails are NOT stored in this repo or deployed with the site.
+// `node scripts/make-previews.mjs` builds them (and updates videos.json); upload that
+// folder to the video host and set VITE_MEDIA_BASE_URL to its public URL at build
+// time. Locally, /videos is served from public/videos, which is git-ignored.
 const MEDIA_BASE = (import.meta.env.VITE_MEDIA_BASE_URL as string | undefined)?.replace(/\/$/, "") || "/videos";
 
-// File names as exported; titles are generic until real ones are written.
-const FILES = [
-  "welcome",
-  "202609111916",
-  "AnQ3uTOgUZdWwqe5",
-  "bOZayc0HVy4CNxAx",
-  "ccUTmRhQdQZcTZ7a",
-  "Cyen6qcXyjnYVjic",
-  "e19bXs-mYzBhBP88",
-  "FIqud_AsvBwDDojM",
-  "HkcyRxewtxp5blY6",
-  "iJ57F1lKSBSn4Hkx",
-  "j5l0ACIP1LMKIb0e",
-  "JD6E-q3PMmRSRldY",
-  "jWjUzKcXG-UL5buZ",
-  "k4U1ZUUbx9S2pTlX",
-  "KyHchn2MSIa0KDcI",
-  "Ma8jUHgk9LbwFMv8",
-  "PwsGMpqAstVtkeUy",
-  "qB-2bJNg8LebSHTA",
-  "qEe5w9E9E3EA9w_v",
-  "qWXAG1avQkR6TyMk",
-  "rlXYWFleThnIN5Iw",
-  "rSlViJ7MRjEexUt9",
-  "sLPYX5QyzetN8g01",
-  "sMznv0Q99wr_5u2Q",
-  "Uxu7r7pw-KBVYKFp",
-  "WDZU8Ix5qGOFSRxe",
-  "wXsLVQb56IHYLyPu",
-  "x9JxRqC4MLg-ARaK",
-  "XkOWv8ZkJoNYS1bI",
-  "XZQ_1fwxpi3vEexg",
-];
+type Entry = { id: string; title: string; duration: string; previewDuration: string; addedAt: string };
 
-export const CATALOG: Video[] = FILES.map((file, i) => ({
-  id: file.toLowerCase(),
-  title: file === "welcome" ? "Boas-vindas ao HotGay" : `Prévia exclusiva #${i}`,
-  description: "Prévia gratuita. O vídeo completo e mais de 800 outros estão na nossa comunidade no Telegram.",
+export const CATALOG: Video[] = (videos as Entry[]).map((v, i, all) => ({
+  id: v.id,
+  // Untitled entries are numbered oldest-first, so a new upload never renumbers the rest.
+  title: v.title || `Prévia exclusiva #${all.length - i}`,
+  description: `Prévia gratuita de ${v.previewDuration}. O vídeo completo (${v.duration}) e mais de 800 outros estão na nossa comunidade no Telegram.`,
   category: "Prévias",
-  // Duration and thumbnail are read from the file itself in the browser.
-  duration: "",
+  duration: v.duration,
   views: "",
   creator: "HotGay",
-  src: `${MEDIA_BASE}/${file}.mp4`,
-  poster: "",
+  src: `${MEDIA_BASE}/${v.id}.mp4`,
+  poster: `${MEDIA_BASE}/${v.id}.jpg`,
 }));
 
 export function findVideo(id: string, extras: Video[] = []): Video | undefined {
