@@ -122,6 +122,8 @@ function Watch() {
             key={src}
             controls
             playsInline
+            // Only fetch the file's header until the viewer presses play; saves CDN bandwidth.
+            preload="metadata"
             poster={poster}
             onError={() => setFailedSrc(src)}
             className="aspect-video w-full rounded-xl bg-black"

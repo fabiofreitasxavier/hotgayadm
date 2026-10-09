@@ -23,6 +23,8 @@ export const Route = createRootRoute({
       { rel: "icon", type: "image/jpeg", href: "/logo.jpg" },
       { rel: "stylesheet", href: appCss },
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
+      // Thumbnails and previews come from the CDN; open the connection early.
+      { rel: "preconnect", href: "https://hotgay.b-cdn.net" },
       {
         rel: "stylesheet",
         href: "https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,600;0,700;0,800;1,800&family=Barlow:wght@400;500;600&display=swap",

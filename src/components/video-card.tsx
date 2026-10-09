@@ -25,6 +25,7 @@ export function VideoCard({ video }: { video: Video }) {
             src={poster}
             alt=""
             loading="lazy"
+            decoding="async"
             onError={() => setFailed(poster)}
             className="h-full w-full object-cover"
           />
