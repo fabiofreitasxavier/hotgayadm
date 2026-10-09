@@ -44,6 +44,11 @@ export function VideoCard({ video }: { video: Video }) {
             <img src={BRAND.logo} alt="" className="size-16 rounded-full opacity-80" />
           </div>
         )}
+        {video.source ? (
+          <span className="absolute top-2 left-2 rounded bg-black/75 px-1.5 py-0.5 text-[11px] text-[var(--color-mute)]">
+            via {video.source}
+          </span>
+        ) : null}
         {duration ? (
           <span className="absolute right-2 bottom-2 rounded bg-black/75 px-1.5 py-0.5 text-xs">{duration}</span>
         ) : null}

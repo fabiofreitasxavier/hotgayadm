@@ -43,7 +43,17 @@ function Watch() {
   return (
     <main className="mx-auto grid max-w-6xl gap-8 px-4 py-6 lg:grid-cols-[minmax(0,1fr)_280px]">
       <section>
-        {src ? (
+        {video.embedUrl ? (
+          // Played by the source site's own player; the file never touches our host.
+          <iframe
+            key={video.embedUrl}
+            src={video.embedUrl}
+            title={video.title}
+            allowFullScreen
+            referrerPolicy="strict-origin-when-cross-origin"
+            className="aspect-video w-full rounded-xl border-0 bg-black"
+          />
+        ) : src ? (
           <video
             key={src}
             controls
