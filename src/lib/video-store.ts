@@ -101,7 +101,7 @@ export function probeVideo(file: File): Promise<Probe> {
   });
 }
 
-function formatDuration(seconds: number): string {
+export function formatDuration(seconds: number): string {
   if (!Number.isFinite(seconds) || seconds <= 0) return "Local";
   const s = Math.round(seconds);
   const h = Math.floor(s / 3600);

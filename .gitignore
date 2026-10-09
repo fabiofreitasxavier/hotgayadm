@@ -3,3 +3,6 @@ node_modules/
 .github_repo
 .env
 .env.*
+
+# Video files are hosted externally; local preview links them here. Never commit.
+public/videos

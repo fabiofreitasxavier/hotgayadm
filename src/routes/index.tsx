@@ -45,7 +45,8 @@ function Home() {
         {q ? `Resultados para “${q}”` : "Prévias gratuitas"}
       </h2>
 
-      <nav className="mb-6 flex gap-2 overflow-x-auto pb-1">
+      {/* Only worth showing once there is more than one real category. */}
+      <nav className={CATEGORIES.length > 2 ? "mb-6 flex gap-2 overflow-x-auto pb-1" : "hidden"}>
         {CATEGORIES.map((name) => {
           const active = (cat ?? "All") === name;
           return (

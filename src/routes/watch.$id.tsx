@@ -78,7 +78,7 @@ function Watch() {
           ) : null}
         </div>
         <p className="mt-2 text-sm text-[var(--color-mute)]">
-          {video.creator} · {video.views} visualizações · {video.duration}
+          {[video.creator, video.views && `${video.views} visualizações`, video.duration].filter(Boolean).join(" · ")}
         </p>
         <p className="mt-4 max-w-2xl text-[15px] leading-relaxed">{video.description}</p>
       </section>
