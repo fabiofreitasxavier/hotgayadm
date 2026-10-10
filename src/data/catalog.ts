@@ -31,7 +31,14 @@ const PREVIEWS = "Prévias";
 
 type PreviewEntry = { id: string; title: string; duration: string; previewDuration: string; addedAt: string };
 // Added by `npm run add-embed`; the video stays on the source site and plays in its own player.
-type EmbedEntry = { id: string; title: string; embedUrl: string; source: string; addedAt: string };
+// `thumb` is a file name on the media host (e.g. "xv-abc123.jpg", set by `npm run embed-thumbs`)
+// or a full https URL.
+type EmbedEntry = { id: string; title: string; embedUrl: string; source: string; addedAt: string; thumb?: string };
+
+function thumbUrl(thumb: string | undefined): string {
+  if (!thumb) return "";
+  return /^https:\/\//.test(thumb) ? thumb : `${MEDIA_BASE}/${thumb}`;
+}
 type Entry = PreviewEntry | EmbedEntry;
 
 const isEmbed = (v: Entry): v is EmbedEntry => "embedUrl" in v;
@@ -47,7 +54,7 @@ export const CATALOG: Video[] = (videos as Entry[]).map((v, i, all) =>
         views: "",
         creator: v.source,
         src: "",
-        poster: "",
+        poster: thumbUrl(v.thumb),
         embedUrl: v.embedUrl,
         source: v.source,
       }

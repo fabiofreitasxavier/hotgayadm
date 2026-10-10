@@ -13,6 +13,7 @@
     "db:migrate": "node scripts/migrate.mjs",
     "previews": "node scripts/make-previews.mjs",
     "add-embed": "node scripts/add-embed.mjs",
+    "embed-thumbs": "node scripts/embed-thumbs.mjs",
     "build:dev": "node scripts/with-app-env.mjs vite build --mode development",
     "preview": "node scripts/with-app-env.mjs vite preview",
     "preview:restart": "node scripts/preview.mjs restart",
