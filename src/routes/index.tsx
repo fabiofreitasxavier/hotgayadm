@@ -3,6 +3,7 @@ import { useEffect, useState, type ReactNode } from "react";
 import { CATALOG, CATEGORIES } from "@/data/catalog";
 import { useUploads } from "@/lib/uploads";
 import { VideoCard } from "@/components/video-card";
+import { BRAND } from "@/lib/brand";
 import { PromoHero, TelegramCard } from "@/components/telegram-cta";
 
 type Search = { q?: string; cat?: string };
@@ -10,6 +11,7 @@ type Search = { q?: string; cat?: string };
 const PAGE_SIZE = 24;
 
 export const Route = createFileRoute("/")({
+  head: () => ({ links: [{ rel: "canonical", href: `${BRAND.siteUrl}/` }] }),
   validateSearch: (search: Record<string, unknown>): Search => ({
     q: typeof search.q === "string" ? search.q : undefined,
     cat: typeof search.cat === "string" ? search.cat : undefined,

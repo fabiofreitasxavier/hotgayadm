@@ -11,6 +11,8 @@ export type Video = {
   src: string;
   poster: string;
   local?: boolean;
+  /** YYYY-MM-DD the video was added to the catalog. */
+  addedAt?: string;
   /** Third-party player URL (e.g. xvideos embedframe); played in an iframe instead of <video>. */
   embedUrl?: string;
   /** Display name of the site an embed comes from. */
@@ -56,19 +58,21 @@ export const CATALOG: Video[] = (videos as Entry[]).map((v, i, all) =>
         src: "",
         poster: thumbUrl(v.thumb),
         embedUrl: v.embedUrl,
+        addedAt: v.addedAt,
         source: v.source,
       }
     : {
         id: v.id,
         // Untitled entries are numbered oldest-first, so a new upload never renumbers the rest.
         title: v.title || `Prévia exclusiva #${all.length - i}`,
-        description: `Prévia gratuita de ${v.previewDuration}. O vídeo completo (${v.duration}) e mais de 800 outros estão na nossa comunidade no Telegram.`,
+        description: `${v.title || "Prévia exclusiva"}: prévia gratuita de ${v.previewDuration}. O vídeo completo (${v.duration}) e mais de 800 outros estão na nossa comunidade no Telegram.`,
         category: PREVIEWS,
         duration: v.duration,
         views: "",
         creator: "HotGay",
         src: `${MEDIA_BASE}/${v.id}.mp4`,
         poster: `${MEDIA_BASE}/${v.id}.jpg`,
+        addedAt: v.addedAt,
       },
 );
 

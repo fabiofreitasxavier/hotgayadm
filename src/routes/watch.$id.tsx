@@ -7,21 +7,47 @@ import { posterKey, useStoredMedia, videoKey } from "@/lib/video-store";
 import { VideoCard } from "@/components/video-card";
 import { NotFound } from "@/components/not-found";
 import { TelegramCard } from "@/components/telegram-cta";
+import { BRAND } from "@/lib/brand";
 
 export const Route = createFileRoute("/watch/$id")({
-  // Catalog videos get their own tab title and description; local uploads fall back to the site default.
+  // Catalog videos get their own title, description, canonical URL and (for our own
+  // previews) VideoObject structured data. Embeds are noindex: the same video is already
+  // indexed on its source site, and many duplicate pages hurt the whole domain.
   head: ({ params }) => {
     const video = findVideo(params.id);
     if (!video) return {};
-    return {
-      meta: [
-        { title: `${video.title} — HotGay` },
-        { name: "description", content: video.description },
-      ],
+    const url = `${BRAND.siteUrl}/watch/${video.id}`;
+    const meta = [
+      { title: `${video.title} — ${BRAND.name}` },
+      { name: "description", content: video.description },
+      ...(video.embedUrl ? [{ name: "robots", content: "noindex, follow" }] : []),
+    ];
+    const links = [{ rel: "canonical", href: url }];
+    if (video.embedUrl || video.local) return { meta, links };
+    const jsonLd = {
+      "@context": "https://schema.org",
+      "@type": "VideoObject",
+      name: video.title,
+      description: video.description,
+      thumbnailUrl: [video.poster],
+      contentUrl: video.src,
+      uploadDate: video.addedAt,
+      duration: isoDuration(video.duration),
+      isFamilyFriendly: false,
+      url,
     };
+    return { meta, links, scripts: [{ type: "application/ld+json", children: JSON.stringify(jsonLd) }] };
   },
   component: Watch,
 });
+
+/** "8:20" / "1:02:03" → ISO 8601 "PT8M20S", as schema.org expects. */
+function isoDuration(clock: string): string | undefined {
+  const parts = clock.split(":").map(Number);
+  if (parts.length < 2 || parts.some((n) => !Number.isFinite(n))) return undefined;
+  const [h, m, s] = parts.length === 3 ? parts : [0, ...parts];
+  return `PT${h ? `${h}H` : ""}${m}M${s}S`;
+}
 
 /** Clipboard API first; the legacy execCommand path covers browsers that block it. */
 async function copyText(text: string): Promise<boolean> {
