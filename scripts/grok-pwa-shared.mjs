@@ -340,22 +340,46 @@ function applyCustomCardFromFs(site, cwd) {
   return { ...site, card: "custom", image: disk };
 }
 
+/**
+ * Share tags a route set itself (og:title, og:description, og:image, og:url, og:type).
+ * They win over the site-wide card, so each page can have its own preview.
+ */
+export function readPageShareMeta(html) {
+  const found = {};
+  for (const tag of String(html ?? "").match(/<meta\b[^>]*>/gi) ?? []) {
+    const key = tag.match(/\bproperty\s*=\s*["'](og:(?:title|description|image|url|type))["']/i)?.[1];
+    const content = tag.match(/\bcontent\s*=\s*["']([^"']*)["']/i)?.[1];
+    if (key && content && !(key.toLowerCase() in found)) found[key.toLowerCase()] = unescapeHtml(content);
+  }
+  return found;
+}
+
 export function grokOgHeadTags({
   host = "",
   appName = DEFAULT_APP_NAME,
   site = {},
   documentTitle = "",
   cwd = process.cwd(),
+  page = {},
 } = {}) {
-  const title = resolveOgTitle(site, appName, host, documentTitle);
+  const title = page["og:title"] || resolveOgTitle(site, appName, host, documentTitle);
   const publicHost = resolvePublicHost(host);
   const tags = [
     `<meta name="twitter:card" content="summary_large_image">`,
     `<meta property="og:title" content="${escapeHtml(title)}">`,
+    `<meta name="twitter:title" content="${escapeHtml(title)}">`,
   ];
-  const description = String(site.description ?? "").trim();
+  const description = page["og:description"] || String(site.description ?? "").trim();
   if (description) {
     tags.push(`<meta property="og:description" content="${escapeHtml(description)}">`);
+    tags.push(`<meta name="twitter:description" content="${escapeHtml(description)}">`);
+  }
+  if (page["og:url"]) tags.push(`<meta property="og:url" content="${escapeHtml(page["og:url"])}">`);
+  if (page["og:type"]) tags.push(`<meta property="og:type" content="${escapeHtml(page["og:type"])}">`);
+  if (/^https:\/\//.test(page["og:image"] ?? "")) {
+    tags.push(`<meta property="og:image" content="${escapeHtml(page["og:image"])}">`);
+    tags.push(`<meta name="twitter:image" content="${escapeHtml(page["og:image"])}">`);
+    return tags;
   }
   if (String(site.type ?? "").toLowerCase() === "x:game") {
     tags.push(`<meta property="og:type" content="x:game">`);
@@ -446,6 +470,7 @@ export function injectGrokPwaHead(html, ctx = {}) {
     host,
     documentTitle,
   );
+  const page = readPageShareMeta(html);
   let next = stripShareMetaTags(html);
   if (!readGrokExtensionsEnabled()) next = stripGrokExtensionsScript(next);
 
@@ -459,7 +484,7 @@ export function injectGrokPwaHead(html, ctx = {}) {
 
   next = insertAfterHeadOpen(
     next,
-    grokOgHeadTags({ host, appName, site, documentTitle, cwd }).join(""),
+    grokOgHeadTags({ host, appName, site, documentTitle, cwd, page }).join(""),
   );
 
   if (readGrokExtensionsEnabled() && !next.includes("/grok-app-builder/extensions.js")) {

@@ -21,6 +21,12 @@ export const Route = createFileRoute("/watch/$id")({
       { title: `${video.title} — ${BRAND.name}` },
       { name: "description", content: video.description },
       ...(video.embedUrl ? [{ name: "robots", content: "noindex, follow" }] : []),
+      // Per-page share card; the platform head injector keeps these over its site-wide card.
+      { property: "og:title", content: video.title },
+      { property: "og:description", content: video.description },
+      { property: "og:url", content: url },
+      { property: "og:type", content: "video.other" },
+      ...(/^https:\/\//.test(video.poster) ? [{ property: "og:image", content: video.poster }] : []),
     ];
     const links = [{ rel: "canonical", href: url }];
     if (video.embedUrl || video.local) return { meta, links };
