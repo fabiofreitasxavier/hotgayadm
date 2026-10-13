@@ -18,7 +18,7 @@ export function SiteHeader() {
     <header className="sticky top-0 z-20 border-b border-[var(--color-line)] bg-[var(--color-ink)]/90 backdrop-blur">
       <div className="mx-auto flex max-w-6xl items-center gap-3 px-4 py-3">
         <Link to="/" className="flex shrink-0 items-center gap-2">
-          <img src={BRAND.logo} alt="" className="size-9 rounded-full shadow-[var(--glow)]" />
+          <img src={BRAND.logo} alt={BRAND.name} className="size-9 rounded-full shadow-[var(--glow)]" />
           <span className="hidden font-[family-name:var(--font-display)] text-2xl font-extrabold tracking-wide uppercase md:inline">
             {BRAND.name}
           </span>

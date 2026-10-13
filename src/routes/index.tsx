@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect, useState, type ReactNode } from "react";
+import { type ReactNode } from "react";
 import { CATALOG, CATEGORIES } from "@/data/catalog";
 import { useUploads } from "@/lib/uploads";
 import { VideoCard } from "@/components/video-card";
@@ -11,7 +11,58 @@ type Search = { q?: string; cat?: string };
 const PAGE_SIZE = 24;
 
 export const Route = createFileRoute("/")({
-  head: () => ({ links: [{ rel: "canonical", href: `${BRAND.siteUrl}/` }] }),
+  head: () => {
+    const title = "HotGay — Prévia de vídeos gays exclusivos e comunidade privada";
+    const description =
+      "Prévias gratuitas de vídeos gays exclusivos, atualizadas todos os dias. Veja os vídeos e entre na comunidade privada no Telegram com mais de 800 vídeos por R$ 9,99.";
+    const meta = [
+      { title },
+      { name: "description", content: description },
+      { property: "og:type", content: "website" },
+      { property: "og:title", content: title },
+      { property: "og:description", content: description },
+      { property: "og:url", content: `${BRAND.siteUrl}/` },
+      { property: "og:image", content: `${BRAND.siteUrl}/logo.jpg` },
+      { property: "og:locale", content: "pt_BR" },
+      { property: "og:site_name", content: BRAND.name },
+    ];
+    const jsonLd = {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "WebSite",
+          name: BRAND.name,
+          url: `${BRAND.siteUrl}/`,
+          inLanguage: "pt-BR",
+          potentialAction: {
+            "@type": "SearchAction",
+            target: `${BRAND.siteUrl}/?q={search_term_string}`,
+            "query-input": "required name=search_term_string",
+          },
+        },
+        {
+          "@type": "Organization",
+          name: BRAND.name,
+          url: `${BRAND.siteUrl}/`,
+          logo: `${BRAND.siteUrl}/logo.jpg`,
+        },
+        {
+          "@type": "ItemList",
+          itemListElement: CATALOG.slice(0, 24).map((v, i) => ({
+            "@type": "ListItem",
+            position: i + 1,
+            url: `${BRAND.siteUrl}/watch/${v.id}`,
+            name: v.title,
+          })),
+        },
+      ],
+    };
+    return {
+      meta,
+      links: [{ rel: "canonical", href: `${BRAND.siteUrl}/` }],
+      scripts: [{ type: "application/ld+json", children: JSON.stringify(jsonLd) }],
+    };
+  },
   validateSearch: (search: Record<string, unknown>): Search => ({
     q: typeof search.q === "string" ? search.q : undefined,
     cat: typeof search.cat === "string" ? search.cat : undefined,
@@ -37,10 +88,8 @@ function Home() {
   // Keep the hero for the landing view; searches and category filters go straight to results.
   const showHero = !q && !cat;
 
-  // Render the grid a page at a time; a new search or category starts from the first page.
-  const [shown, setShown] = useState(PAGE_SIZE);
-  useEffect(() => setShown(PAGE_SIZE), [q, cat]);
-  const visible = filtered.slice(0, shown);
+  // Render the full (filtered) list so every video is present in the initial HTML for crawlers and users alike.
+  const visible = filtered;
 
   return (
     <main className="mx-auto max-w-6xl px-4 py-6">
@@ -98,20 +147,7 @@ function Home() {
               </VideoSlot>
             ))}
           </div>
-          {shown < filtered.length ? (
-            <div className="mt-8 flex flex-col items-center gap-2">
-              <button
-                type="button"
-                onClick={() => setShown((n) => n + PAGE_SIZE)}
-                className="rounded-full border border-[var(--color-line)] bg-[var(--color-panel)] px-6 py-2.5 text-sm font-semibold hover:border-[var(--color-accent)]"
-              >
-                Carregar mais
-              </button>
-              <p className="text-xs text-[var(--color-mute)]">
-                Mostrando {visible.length} de {filtered.length}
-              </p>
-            </div>
-          ) : null}
+          null
         </>
       )}
     </main>

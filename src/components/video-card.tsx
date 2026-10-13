@@ -23,7 +23,7 @@ export function VideoCard({ video }: { video: Video }) {
         {poster && failed !== poster ? (
           <img
             src={poster}
-            alt=""
+            alt={video.title}
             loading="lazy"
             decoding="async"
             onError={() => setFailed(poster)}
@@ -42,7 +42,7 @@ export function VideoCard({ video }: { video: Video }) {
         ) : (
           // Missing or broken thumbnail: show the brand mark instead of a broken-image icon.
           <div className="flex h-full items-center justify-center bg-[radial-gradient(circle,rgba(147,51,234,0.25),transparent_70%)]">
-            <img src={BRAND.logo} alt="" className="size-16 rounded-full opacity-80" />
+            <img src={BRAND.logo} alt={BRAND.name} className="size-16 rounded-full opacity-80" />
           </div>
         )}
         {video.source ? (

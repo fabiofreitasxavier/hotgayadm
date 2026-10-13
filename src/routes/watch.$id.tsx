@@ -17,32 +17,65 @@ export const Route = createFileRoute("/watch/$id")({
     const video = findVideo(params.id);
     if (!video) return {};
     const url = `${BRAND.siteUrl}/watch/${video.id}`;
+    const hasPoster = /^https:\/\//.test(video.poster);
+    const ownPreview = !video.embedUrl && !video.local;
+    const title = `${video.title} — Vídeo gay | ${BRAND.name}`;
+    const description = video.description;
     const meta = [
-      { title: `${video.title} — ${BRAND.name}` },
-      { name: "description", content: video.description },
+      { title },
+      { name: "description", content: description },
+      { name: "keywords", content: `${video.title}, ${video.category}, vídeo gay, hot gay, ${BRAND.name}` },
       ...(video.embedUrl ? [{ name: "robots", content: "noindex, follow" }] : []),
       // Per-page share card; the platform head injector keeps these over its site-wide card.
       { property: "og:title", content: video.title },
-      { property: "og:description", content: video.description },
+      { property: "og:description", content: description },
       { property: "og:url", content: url },
       { property: "og:type", content: "video.other" },
+      { property: "og:locale", content: "pt_BR" },
+      { property: "og:site_name", content: BRAND.name },
       ...(/^https:\/\//.test(video.poster) ? [{ property: "og:image", content: video.poster }] : []),
+      ...(ownPreview
+        ? [
+            { property: "og:video", content: video.src },
+            { property: "og:video:type", content: "video/mp4" },
+            { property: "og:video:width", content: "1280" },
+            { property: "og:video:height", content: "720" },
+          ]
+        : []),
     ];
     const links = [{ rel: "canonical", href: url }];
-    if (video.embedUrl || video.local) return { meta, links };
-    const jsonLd = {
-      "@context": "https://schema.org",
-      "@type": "VideoObject",
-      name: video.title,
-      description: video.description,
-      thumbnailUrl: [video.poster],
-      contentUrl: video.src,
-      uploadDate: video.addedAt,
-      duration: isoDuration(video.duration),
-      isFamilyFriendly: false,
-      url,
-    };
-    return { meta, links, scripts: [{ type: "application/ld+json", children: JSON.stringify(jsonLd) }] };
+    const scripts: { type: string; children: string }[] = [];
+    const duration = isoDuration(video.duration);
+    if (ownPreview) {
+      const jsonLd = {
+        "@context": "https://schema.org",
+        "@type": "VideoObject",
+        name: video.title,
+        description,
+        thumbnailUrl: hasPoster ? [video.poster] : undefined,
+        contentUrl: video.src,
+        uploadDate: video.addedAt,
+        duration,
+        isFamilyFriendly: false,
+        inLanguage: "pt-BR",
+        url,
+        creator: { "@type": "Organization", name: BRAND.name },
+        publisher: { "@type": "Organization", name: BRAND.name, logo: { "@type": "ImageObject", url: `${BRAND.siteUrl}/logo.jpg` } },
+        keywords: video.category,
+      };
+      const breadcrumb = {
+        "@context": "https://schema.org",
+        "@type": "BreadcrumbList",
+        itemListElement: [
+          { "@type": "ListItem", position: 1, name: "Início", item: `${BRAND.siteUrl}/` },
+          { "@type": "ListItem", position: 2, name: video.title, item: url },
+        ],
+      };
+      scripts.push({ type: "application/ld+json", children: JSON.stringify(jsonLd) });
+      scripts.push({ type: "application/ld+json", children: JSON.stringify(breadcrumb) });
+    }
+    if (scripts.length === 0) return { meta, links };
+    return { meta, links, scripts };
   },
   component: Watch,
 });

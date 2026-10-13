@@ -60,7 +60,7 @@ export function PromoHero() {
   return (
     <section className="relative overflow-hidden rounded-3xl border border-[var(--color-line)] bg-[radial-gradient(ellipse_at_top_right,rgba(168,85,247,0.35),transparent_60%),linear-gradient(180deg,#140b22,#0b0712)] p-5 sm:p-8">
       <div className="flex items-center gap-3">
-        <img src={BRAND.logo} alt="" className="size-12 rounded-full shadow-[var(--glow)]" />
+        <img src={BRAND.logo} alt={BRAND.name} className="size-12 rounded-full shadow-[var(--glow)]" />
         <div>
           <p className="font-[family-name:var(--font-display)] text-2xl leading-none font-extrabold tracking-wide uppercase">
             {BRAND.name}

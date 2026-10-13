@@ -37,6 +37,7 @@ function videoTag(v) {
   return (
     "<video:video>" +
     `<video:thumbnail_loc>${MEDIA}/${v.id}.jpg</video:thumbnail_loc>` +
+    `<image:image><image:loc>${MEDIA}/${v.id}.jpg</image:loc><image:title>${esc(title)}</image:title></image:image>` +
     `<video:title>${esc(title)}</video:title>` +
     `<video:description>${esc(`${title}: prévia gratuita, conteúdo para maiores de 18 anos.`)}</video:description>` +
     `<video:content_loc>${MEDIA}/${v.id}.mp4</video:content_loc>` +
@@ -47,7 +48,7 @@ function videoTag(v) {
 }
 
 const xml =
-  `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:video="http://www.google.com/schemas/sitemap-video/1.1">\n` +
+  `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:video="http://www.google.com/schemas/sitemap-video/1.1" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">\n` +
   pages
     .map(
       (p) =>
