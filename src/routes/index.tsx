@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { CATALOG, CATEGORY_PAGES, findTag, ownFirst } from "@/data/catalog";
+import { GUIDES } from "@/data/guides";
 import { useUploads } from "@/lib/uploads";
 import { VideoGrid } from "@/components/video-grid";
 import { PromoBanner } from "@/components/promo";
@@ -235,6 +236,22 @@ function AboutSite() {
           .
         </p>
       ) : null}
+      <p className="mt-2">
+        Leia antes de assistir:{" "}
+        {GUIDES.map((g, i) => (
+          <span key={g.slug}>
+            {i > 0 ? ", " : ""}
+            <Link to="/guia/$slug" params={{ slug: g.slug }} className="text-[var(--color-accent-hi)] hover:underline">
+              {g.title.toLowerCase()}
+            </Link>
+          </span>
+        ))}
+        . Todos os textos estão na{" "}
+        <Link to="/guia" className="text-[var(--color-accent-hi)] hover:underline">
+          página de guias
+        </Link>
+        .
+      </p>
       <p className="mt-2">
         Todo o conteúdo é para maiores de 18 anos, e todas as pessoas retratadas tinham 18 anos ou
         mais no momento da gravação.

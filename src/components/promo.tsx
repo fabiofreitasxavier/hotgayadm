@@ -119,7 +119,7 @@ export function PromoBanner({
       }
     >
       <div className="flex items-center gap-3">
-        <img src={BRAND.logo} alt="" className="hidden size-11 shrink-0 rounded-full sm:block" />
+        <img src={BRAND.logo} alt={BRAND.name} className="hidden size-11 shrink-0 rounded-full sm:block" />
         <div>
           <p className="text-[11px] tracking-[0.2em] text-[var(--color-accent-hi)] uppercase">
             {p.kicker}

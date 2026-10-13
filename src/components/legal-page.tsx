@@ -19,7 +19,24 @@ export function LegalPage({ title, children }: { title: string; children: ReactN
   );
 }
 
-/** The contact address, or a note that it is coming, so no page shows a blank link. */
+/** Share-card tags for a legal page. Per-route og tags survive the platform head injector. */
+export function legalHead(path: string, title: string, description: string) {
+  const url = `${BRAND.siteUrl}${path}`;
+  return {
+    meta: [
+      { title },
+      { name: "description", content: description },
+      { property: "og:type", content: "website" },
+      { property: "og:title", content: title },
+      { property: "og:description", content: description },
+      { property: "og:url", content: url },
+      { property: "og:image", content: `${BRAND.siteUrl}/logo.jpg` },
+      { property: "og:locale", content: "pt_BR" },
+      { property: "og:site_name", content: BRAND.name },
+    ],
+    links: [{ rel: "canonical", href: url }],
+  };
+}
 export function ContactEmail() {
   if (!BRAND.contactEmail) {
     return <span className="text-[var(--color-mute)]">(endereço de contato em configuração)</span>;

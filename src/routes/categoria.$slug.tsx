@@ -1,5 +1,6 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { CATEGORY_PAGES, MIN_CATEGORY_SIZE, findTag, videosInTag } from "@/data/catalog";
+import { guidesForCategory } from "@/data/guides";
 import { VideoGrid } from "@/components/video-grid";
 import { PromoBanner } from "@/components/promo";
 import { BRAND } from "@/lib/brand";
@@ -106,6 +107,20 @@ function Category() {
         <p className="mt-1 max-w-3xl text-sm leading-relaxed text-[var(--color-mute)]">
           {tag.intro}
         </p>
+        {guidesForCategory(slug).length ? (
+          <p className="mt-2 max-w-3xl text-sm text-[var(--color-mute)]">
+            Leia também:{" "}
+            {guidesForCategory(slug).map((g, i) => (
+              <span key={g.slug}>
+                {i > 0 ? ", " : ""}
+                <Link to="/guia/$slug" params={{ slug: g.slug }} className="text-[var(--color-accent-hi)] hover:underline">
+                  {g.title.toLowerCase()}
+                </Link>
+              </span>
+            ))}
+            .
+          </p>
+        ) : null}
       </header>
 
       <VideoGrid videos={videos} />

@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 /**
- * Writes public/robots.txt and public/sitemap.xml from src/data/videos.json and src/data/tags.json.
+ * Writes public/robots.txt and public/sitemap.xml from src/data/videos.json, src/data/tags.json
+ * and src/data/guides.json.
  * Runs before every build (npm "prebuild"), so new videos and categories are listed automatically.
  *
  * The site address comes from src/data/site.json (shared with the app's canonical URLs);
@@ -19,6 +20,7 @@ const SITE = (process.env.SITE_URL || site.siteUrl).replace(/\/$/, "");
 
 const videos = readJson("src/data/videos.json");
 const tags = readJson("src/data/tags.json");
+const guides = readJson("src/data/guides.json");
 const today = new Date().toISOString().slice(0, 10);
 
 // Keep in step with src/data/catalog.ts: our own previews are always in this category,
@@ -45,6 +47,23 @@ const categories = tags
   .map((t) => ({ tag: t, members: videos.filter((v) => tagsOf(v).includes(t.slug)) }))
   .filter((c) => c.members.length >= MIN_CATEGORY_SIZE);
 
+const knownTag = new Set(tags.map((t) => t.slug));
+const guideSlugs = new Set();
+for (const g of guides) {
+  if (!g.slug || guideSlugs.has(g.slug)) throw new Error(`[sitemap] duplicate or empty guide slug: ${g.slug}`);
+  guideSlugs.add(g.slug);
+  if (g.description.length < 120 || g.description.length > 170) {
+    throw new Error(`[sitemap] guide description length ${g.slug}: ${g.description.length}`);
+  }
+  for (const slug of g.categories ?? []) {
+    if (!knownTag.has(slug)) throw new Error(`[sitemap] guide ${g.slug} names unknown category ${slug}`);
+  }
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(g.updated || "")) {
+    throw new Error(`[sitemap] guide ${g.slug} needs a YYYY-MM-DD updated date`);
+  }
+}
+const guideUpdated = guides.map((g) => g.updated).sort().at(-1) || LEGAL_UPDATED;
+
 const pages = [
   { path: "/", lastmod: newest(videos), priority: "1.0" },
   // Home pages 2..N (PAGE_SIZE in src/routes/index.tsx).
@@ -57,6 +76,12 @@ const pages = [
     path: `/categoria/${c.tag.slug}`,
     lastmod: newest(c.members),
     priority: "0.8",
+  })),
+  { path: "/guia", lastmod: guideUpdated, priority: "0.6" },
+  ...guides.map((g) => ({
+    path: `/guia/${g.slug}`,
+    lastmod: g.updated,
+    priority: "0.6",
   })),
   // Embed pages are noindex (duplicates of the source site), so only our own previews are listed.
   ...videos

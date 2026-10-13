@@ -1,4 +1,4 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, notFound, useNavigate } from "@tanstack/react-router";
 import { Check, Link as LinkIcon, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { CATALOG, PREVIEWS_TAG, findTag, findVideo, type Tag, type Video } from "@/data/catalog";
@@ -10,6 +10,12 @@ import { FullVideoCta, PromoTile } from "@/components/promo";
 import { BRAND } from "@/lib/brand";
 
 export const Route = createFileRoute("/watch/$id")({
+  // Uploads use ids like local-<timestamp> and exist only in that browser. The server
+  // cannot 404 those. Any other unknown id is a real 404, not a soft 200.
+  loader: ({ params }) => {
+    if (params.id.startsWith("local-")) return;
+    if (!findVideo(params.id)) throw notFound();
+  },
   // Catalog videos get their own title, description, canonical URL and (for our own
   // previews) VideoObject structured data. Embeds are noindex: the same video is already
   // indexed on its source site, and many duplicate pages hurt the whole domain.

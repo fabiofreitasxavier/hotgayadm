@@ -1,15 +1,14 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { ContactEmail, LegalPage } from "@/components/legal-page";
+import { ContactEmail, LegalPage, legalHead } from "@/components/legal-page";
 import { BRAND } from "@/lib/brand";
 
 export const Route = createFileRoute("/privacidade")({
-  head: () => ({
-    meta: [
-      { title: `Política de Privacidade — ${BRAND.name}` },
-      { name: "description", content: `Como o ${BRAND.name} trata os seus dados: o que coletamos, por quê e como pedir remoção.` },
-    ],
-    links: [{ rel: "canonical", href: `${BRAND.siteUrl}/privacidade` }],
-  }),
+  head: () =>
+    legalHead(
+      "/privacidade",
+      `Política de Privacidade — ${BRAND.name}`,
+      `Como o ${BRAND.name} trata os seus dados: o que coletamos, por quê e como pedir remoção.`,
+    ),
   component: Privacy,
 });
 

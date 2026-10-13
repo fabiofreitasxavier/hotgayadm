@@ -11,10 +11,13 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as DenunciaRouteImport } from './routes/denuncia'
+import { Route as GuiaRouteImport } from './routes/guia'
 import { Route as PrivacidadeRouteImport } from './routes/privacidade'
 import { Route as TermosRouteImport } from './routes/termos'
 import { Route as UploadRouteImport } from './routes/upload'
 import { Route as CategoriaSlugRouteImport } from './routes/categoria.$slug'
+import { Route as GuiaIndexRouteImport } from './routes/guia.index'
+import { Route as GuiaSlugRouteImport } from './routes/guia.$slug'
 import { Route as WatchIdRouteImport } from './routes/watch.$id'
 
 const IndexRoute = IndexRouteImport.update({
@@ -25,6 +28,11 @@ const IndexRoute = IndexRouteImport.update({
 const DenunciaRoute = DenunciaRouteImport.update({
   id: '/denuncia',
   path: '/denuncia',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const GuiaRoute = GuiaRouteImport.update({
+  id: '/guia',
+  path: '/guia',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PrivacidadeRoute = PrivacidadeRouteImport.update({
@@ -47,6 +55,16 @@ const CategoriaSlugRoute = CategoriaSlugRouteImport.update({
   path: '/categoria/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
+const GuiaIndexRoute = GuiaIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => GuiaRoute,
+} as any)
+const GuiaSlugRoute = GuiaSlugRouteImport.update({
+  id: '/$slug',
+  path: '/$slug',
+  getParentRoute: () => GuiaRoute,
+} as any)
 const WatchIdRoute = WatchIdRouteImport.update({
   id: '/watch/$id',
   path: '/watch/$id',
@@ -56,11 +74,14 @@ const WatchIdRoute = WatchIdRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/denuncia': typeof DenunciaRoute
+  '/guia': typeof GuiaRouteWithChildren
   '/privacidade': typeof PrivacidadeRoute
   '/termos': typeof TermosRoute
   '/upload': typeof UploadRoute
   '/categoria/$slug': typeof CategoriaSlugRoute
+  '/guia/$slug': typeof GuiaSlugRoute
   '/watch/$id': typeof WatchIdRoute
+  '/guia/': typeof GuiaIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -69,28 +90,36 @@ export interface FileRoutesByTo {
   '/termos': typeof TermosRoute
   '/upload': typeof UploadRoute
   '/categoria/$slug': typeof CategoriaSlugRoute
+  '/guia/$slug': typeof GuiaSlugRoute
   '/watch/$id': typeof WatchIdRoute
+  '/guia': typeof GuiaIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/denuncia': typeof DenunciaRoute
+  '/guia': typeof GuiaRouteWithChildren
   '/privacidade': typeof PrivacidadeRoute
   '/termos': typeof TermosRoute
   '/upload': typeof UploadRoute
   '/categoria/$slug': typeof CategoriaSlugRoute
+  '/guia/$slug': typeof GuiaSlugRoute
   '/watch/$id': typeof WatchIdRoute
+  '/guia/': typeof GuiaIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
     | '/denuncia'
+    | '/guia'
     | '/privacidade'
     | '/termos'
     | '/upload'
     | '/categoria/$slug'
+    | '/guia/$slug'
     | '/watch/$id'
+    | '/guia/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -99,21 +128,27 @@ export interface FileRouteTypes {
     | '/termos'
     | '/upload'
     | '/categoria/$slug'
+    | '/guia/$slug'
     | '/watch/$id'
+    | '/guia'
   id:
     | '__root__'
     | '/'
     | '/denuncia'
+    | '/guia'
     | '/privacidade'
     | '/termos'
     | '/upload'
     | '/categoria/$slug'
+    | '/guia/$slug'
     | '/watch/$id'
+    | '/guia/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   DenunciaRoute: typeof DenunciaRoute
+  GuiaRoute: typeof GuiaRouteWithChildren
   PrivacidadeRoute: typeof PrivacidadeRoute
   TermosRoute: typeof TermosRoute
   UploadRoute: typeof UploadRoute
@@ -135,6 +170,13 @@ declare module '@tanstack/react-router' {
       path: '/denuncia'
       fullPath: '/denuncia'
       preLoaderRoute: typeof DenunciaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/guia': {
+      id: '/guia'
+      path: '/guia'
+      fullPath: '/guia'
+      preLoaderRoute: typeof GuiaRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/privacidade': {
@@ -165,6 +207,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CategoriaSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/guia/': {
+      id: '/guia/'
+      path: '/'
+      fullPath: '/guia/'
+      preLoaderRoute: typeof GuiaIndexRouteImport
+      parentRoute: typeof GuiaRoute
+    }
+    '/guia/$slug': {
+      id: '/guia/$slug'
+      path: '/$slug'
+      fullPath: '/guia/$slug'
+      preLoaderRoute: typeof GuiaSlugRouteImport
+      parentRoute: typeof GuiaRoute
+    }
     '/watch/$id': {
       id: '/watch/$id'
       path: '/watch/$id'
@@ -175,9 +231,22 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface GuiaRouteChildren {
+  GuiaSlugRoute: typeof GuiaSlugRoute
+  GuiaIndexRoute: typeof GuiaIndexRoute
+}
+
+const GuiaRouteChildren: GuiaRouteChildren = {
+  GuiaSlugRoute: GuiaSlugRoute,
+  GuiaIndexRoute: GuiaIndexRoute,
+}
+
+const GuiaRouteWithChildren = GuiaRoute._addFileChildren(GuiaRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   DenunciaRoute: DenunciaRoute,
+  GuiaRoute: GuiaRouteWithChildren,
   PrivacidadeRoute: PrivacidadeRoute,
   TermosRoute: TermosRoute,
   UploadRoute: UploadRoute,

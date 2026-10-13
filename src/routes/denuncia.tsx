@@ -1,15 +1,14 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { ContactEmail, LegalPage } from "@/components/legal-page";
+import { ContactEmail, LegalPage, legalHead } from "@/components/legal-page";
 import { BRAND } from "@/lib/brand";
 
 export const Route = createFileRoute("/denuncia")({
-  head: () => ({
-    meta: [
-      { title: `Denúncia e Remoção — ${BRAND.name}` },
-      { name: "description", content: `Denuncie conteúdo ou peça a remoção de um vídeo do ${BRAND.name}. Atendemos pedidos de direitos autorais e de pessoas retratadas.` },
-    ],
-    links: [{ rel: "canonical", href: `${BRAND.siteUrl}/denuncia` }],
-  }),
+  head: () =>
+    legalHead(
+      "/denuncia",
+      `Denúncia e Remoção — ${BRAND.name}`,
+      `Denuncie conteúdo ou peça a remoção de um vídeo do ${BRAND.name}. Atendemos pedidos de direitos autorais e de pessoas retratadas.`,
+    ),
   component: Report,
 });
 

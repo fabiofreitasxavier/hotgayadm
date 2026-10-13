@@ -61,6 +61,9 @@ export function SiteFooter() {
         </p>
         <TelegramButton label="Acessar o bot do Telegram" className="px-6 py-3 text-base" />
         <nav className="mt-6 flex flex-wrap justify-center gap-x-5 gap-y-2 text-sm text-[var(--color-mute)]">
+          <Link to="/guia" className="hover:text-[var(--color-bone)]">
+            Guias
+          </Link>
           <Link to="/termos" className="hover:text-[var(--color-bone)]">
             Termos de Uso
           </Link>

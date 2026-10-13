@@ -61,6 +61,9 @@ export function SiteHeader() {
         <Link to="/" className={tab + (onHome ? tabOn : tabOff)}>
           Todos os vídeos
         </Link>
+        <Link to="/guia" className={tab + (pathname.startsWith("/guia") ? tabOn : tabOff)}>
+          Guias
+        </Link>
         {CATEGORY_PAGES.map(({ tag }) => (
           <Link
             key={tag.slug}
