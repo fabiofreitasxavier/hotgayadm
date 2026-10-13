@@ -22,6 +22,7 @@ export const Route = createRootRoute({
       { httpEquiv: "content-language", content: "pt-BR" },
     ],
     links: [
+      { rel: "icon", href: "/favicon.ico", sizes: "48x48" },
       { rel: "icon", type: "image/jpeg", href: "/logo.jpg" },
       { rel: "stylesheet", href: appCss },
       { rel: "preconnect", href: "https://fonts.googleapis.com" },

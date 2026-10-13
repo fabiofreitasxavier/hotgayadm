@@ -70,11 +70,12 @@ export function PromoHero() {
       </div>
 
       <h1 className="mt-6 font-[family-name:var(--font-display)] leading-[0.9] font-extrabold uppercase">
-        <span className="block text-3xl sm:text-4xl">Mais de</span>
+        {/* The spaces keep the heading readable as one sentence for crawlers and screen readers. */}
+        <span className="block text-3xl sm:text-4xl">Mais de</span>{" "}
         <span className="block bg-gradient-to-b from-white to-[var(--color-accent-hi)] bg-clip-text text-7xl text-transparent drop-shadow-[0_0_18px_rgba(192,132,252,0.55)] sm:text-8xl">
           {BRAND.videoCount}
-        </span>
-        <span className="block text-4xl sm:text-5xl">Vídeos exclusivos</span>
+        </span>{" "}
+        <span className="block text-4xl sm:text-5xl">Vídeos gays exclusivos</span>
       </h1>
       <p className="mt-3 inline-block -skew-x-6 rounded bg-[var(--color-accent)] px-3 py-1 font-[family-name:var(--font-display)] text-lg font-bold tracking-wide uppercase">
         Atualizados todos os dias

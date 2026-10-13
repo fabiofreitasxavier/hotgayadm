@@ -3,7 +3,13 @@ import { ContactEmail, LegalPage } from "@/components/legal-page";
 import { BRAND } from "@/lib/brand";
 
 export const Route = createFileRoute("/termos")({
-  head: () => ({ meta: [{ title: `Termos de Uso — ${BRAND.name}` }] }),
+  head: () => ({
+    meta: [
+      { title: `Termos de Uso — ${BRAND.name}` },
+      { name: "description", content: `Termos de uso do ${BRAND.name}: regras de acesso, idade mínima de 18 anos e conteúdo de terceiros.` },
+    ],
+    links: [{ rel: "canonical", href: `${BRAND.siteUrl}/termos` }],
+  }),
   component: Terms,
 });
 

@@ -14,6 +14,7 @@ import { Route as DenunciaRouteImport } from './routes/denuncia'
 import { Route as PrivacidadeRouteImport } from './routes/privacidade'
 import { Route as TermosRouteImport } from './routes/termos'
 import { Route as UploadRouteImport } from './routes/upload'
+import { Route as CategoriaSlugRouteImport } from './routes/categoria.$slug'
 import { Route as WatchIdRouteImport } from './routes/watch.$id'
 
 const IndexRoute = IndexRouteImport.update({
@@ -41,6 +42,11 @@ const UploadRoute = UploadRouteImport.update({
   path: '/upload',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CategoriaSlugRoute = CategoriaSlugRouteImport.update({
+  id: '/categoria/$slug',
+  path: '/categoria/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const WatchIdRoute = WatchIdRouteImport.update({
   id: '/watch/$id',
   path: '/watch/$id',
@@ -53,6 +59,7 @@ export interface FileRoutesByFullPath {
   '/privacidade': typeof PrivacidadeRoute
   '/termos': typeof TermosRoute
   '/upload': typeof UploadRoute
+  '/categoria/$slug': typeof CategoriaSlugRoute
   '/watch/$id': typeof WatchIdRoute
 }
 export interface FileRoutesByTo {
@@ -61,6 +68,7 @@ export interface FileRoutesByTo {
   '/privacidade': typeof PrivacidadeRoute
   '/termos': typeof TermosRoute
   '/upload': typeof UploadRoute
+  '/categoria/$slug': typeof CategoriaSlugRoute
   '/watch/$id': typeof WatchIdRoute
 }
 export interface FileRoutesById {
@@ -70,14 +78,28 @@ export interface FileRoutesById {
   '/privacidade': typeof PrivacidadeRoute
   '/termos': typeof TermosRoute
   '/upload': typeof UploadRoute
+  '/categoria/$slug': typeof CategoriaSlugRoute
   '/watch/$id': typeof WatchIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
-    '/' | '/denuncia' | '/privacidade' | '/termos' | '/upload' | '/watch/$id'
+    | '/'
+    | '/denuncia'
+    | '/privacidade'
+    | '/termos'
+    | '/upload'
+    | '/categoria/$slug'
+    | '/watch/$id'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/denuncia' | '/privacidade' | '/termos' | '/upload' | '/watch/$id'
+  to:
+    | '/'
+    | '/denuncia'
+    | '/privacidade'
+    | '/termos'
+    | '/upload'
+    | '/categoria/$slug'
+    | '/watch/$id'
   id:
     | '__root__'
     | '/'
@@ -85,6 +107,7 @@ export interface FileRouteTypes {
     | '/privacidade'
     | '/termos'
     | '/upload'
+    | '/categoria/$slug'
     | '/watch/$id'
   fileRoutesById: FileRoutesById
 }
@@ -94,6 +117,7 @@ export interface RootRouteChildren {
   PrivacidadeRoute: typeof PrivacidadeRoute
   TermosRoute: typeof TermosRoute
   UploadRoute: typeof UploadRoute
+  CategoriaSlugRoute: typeof CategoriaSlugRoute
   WatchIdRoute: typeof WatchIdRoute
 }
 
@@ -134,6 +158,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof UploadRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/categoria/$slug': {
+      id: '/categoria/$slug'
+      path: '/categoria/$slug'
+      fullPath: '/categoria/$slug'
+      preLoaderRoute: typeof CategoriaSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/watch/$id': {
       id: '/watch/$id'
       path: '/watch/$id'
@@ -150,6 +181,7 @@ const rootRouteChildren: RootRouteChildren = {
   PrivacidadeRoute: PrivacidadeRoute,
   TermosRoute: TermosRoute,
   UploadRoute: UploadRoute,
+  CategoriaSlugRoute: CategoriaSlugRoute,
   WatchIdRoute: WatchIdRoute,
 }
 export const routeTree = rootRouteImport

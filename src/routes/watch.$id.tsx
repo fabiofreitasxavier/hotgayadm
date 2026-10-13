@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { Check, Link as LinkIcon, Trash2 } from "lucide-react";
 import { useState } from "react";
-import { CATALOG, findVideo } from "@/data/catalog";
+import { CATALOG, PREVIEWS_TAG, findTag, findVideo, type Tag, type Video } from "@/data/catalog";
 import { useUploads } from "@/lib/uploads";
 import { posterKey, useStoredMedia, videoKey } from "@/lib/video-store";
 import { VideoCard } from "@/components/video-card";
@@ -15,8 +15,12 @@ export const Route = createFileRoute("/watch/$id")({
   // indexed on its source site, and many duplicate pages hurt the whole domain.
   head: ({ params }) => {
     const video = findVideo(params.id);
-    if (!video) return {};
+    // Unknown ids (or uploads that only exist in one visitor's browser) must never be indexed.
+    if (!video) return { meta: [{ name: "robots", content: "noindex" }] };
     const url = `${BRAND.siteUrl}/watch/${video.id}`;
+    const tags = (video.tags ?? []).map(findTag).filter((t): t is Tag => Boolean(t));
+    // Breadcrumb goes through the most specific category: a real topic beats "Prévias exclusivas".
+    const crumbTag = tags.find((t) => t.slug !== PREVIEWS_TAG) ?? tags[0];
     const hasPoster = /^https:\/\//.test(video.poster);
     const ownPreview = !video.embedUrl && !video.local;
     const title = `${video.title} — Vídeo gay | ${BRAND.name}`;
@@ -24,7 +28,7 @@ export const Route = createFileRoute("/watch/$id")({
     const meta = [
       { title },
       { name: "description", content: description },
-      { name: "keywords", content: `${video.title}, ${video.category}, vídeo gay, hot gay, ${BRAND.name}` },
+      { name: "keywords", content: [video.title, ...tags.map((t) => t.name), "vídeo gay", BRAND.name].join(", ") },
       ...(video.embedUrl ? [{ name: "robots", content: "noindex, follow" }] : []),
       // Per-page share card; the platform head injector keeps these over its site-wide card.
       { property: "og:title", content: video.title },
@@ -61,14 +65,24 @@ export const Route = createFileRoute("/watch/$id")({
         url,
         creator: { "@type": "Organization", name: BRAND.name },
         publisher: { "@type": "Organization", name: BRAND.name, logo: { "@type": "ImageObject", url: `${BRAND.siteUrl}/logo.jpg` } },
-        keywords: video.category,
+        keywords: tags.map((t) => t.name).join(", ") || video.category,
       };
       const breadcrumb = {
         "@context": "https://schema.org",
         "@type": "BreadcrumbList",
         itemListElement: [
           { "@type": "ListItem", position: 1, name: "Início", item: `${BRAND.siteUrl}/` },
-          { "@type": "ListItem", position: 2, name: video.title, item: url },
+          ...(crumbTag
+            ? [
+                {
+                  "@type": "ListItem",
+                  position: 2,
+                  name: crumbTag.name,
+                  item: `${BRAND.siteUrl}/categoria/${crumbTag.slug}`,
+                },
+              ]
+            : []),
+          { "@type": "ListItem", position: crumbTag ? 3 : 2, name: video.title, item: url },
         ],
       };
       scripts.push({ type: "application/ld+json", children: JSON.stringify(jsonLd) });
@@ -143,12 +157,20 @@ function Watch() {
   const src = video.local ? storedSrc : video.src;
   const poster = video.poster || storedPoster || undefined;
 
-  // Same category first, then everything else, so "Up next" stays on topic.
-  const others = [...mine, ...CATALOG].filter((v) => v.id !== video.id);
-  const related = [
-    ...others.filter((v) => v.category === video.category),
-    ...others.filter((v) => v.category !== video.category),
-  ].slice(0, 4);
+  // Most shared categories first, then the same category, then everything else, so "Up next"
+  // stays on topic. Our own previews win ties because they are the pages that can rank.
+  const mineTags = new Set(video.tags ?? []);
+  const score = (v: Video) =>
+    (v.tags ?? []).filter((t) => mineTags.has(t) && t !== PREVIEWS_TAG).length * 4 +
+    (v.category === video.category ? 2 : 0) +
+    (v.embedUrl ? 0 : 1);
+  const related = [...mine, ...CATALOG]
+    .filter((v) => v.id !== video.id)
+    .map((v, i) => ({ v, s: score(v), i }))
+    .sort((a, b) => b.s - a.s || a.i - b.i)
+    .slice(0, 6)
+    .map(({ v }) => v);
+  const videoTags = (video.tags ?? []).map(findTag).filter((t): t is Tag => Boolean(t));
 
   return (
     <main className="mx-auto grid max-w-6xl gap-8 px-4 py-6 lg:grid-cols-[minmax(0,1fr)_280px]">
@@ -226,6 +248,21 @@ function Watch() {
           {[video.creator, video.views && `${video.views} visualizações`, video.duration].filter(Boolean).join(" · ")}
         </p>
         <p className="mt-4 max-w-2xl text-[15px] leading-relaxed">{video.description}</p>
+        {videoTags.length ? (
+          <ul aria-label="Categorias" className="mt-4 flex flex-wrap gap-2">
+            {videoTags.map((t) => (
+              <li key={t.slug}>
+                <Link
+                  to="/categoria/$slug"
+                  params={{ slug: t.slug }}
+                  className="inline-block rounded-full border border-[var(--color-line)] px-3 py-1 text-sm text-[var(--color-mute)] hover:border-[var(--color-accent)] hover:text-[var(--color-bone)]"
+                >
+                  {t.name}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        ) : null}
       </section>
       <aside className="space-y-3">
         <TelegramCard />

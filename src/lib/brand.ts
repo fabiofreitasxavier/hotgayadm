@@ -1,9 +1,11 @@
 // Single place for brand copy and the Telegram entry link, so every CTA stays in sync.
+import site from "@/data/site.json";
+
 export const BRAND = {
   name: "HotGay",
   logo: "/logo.jpg",
-  /** Public origin used for canonical URLs and structured data. Change when the custom domain is live. */
-  siteUrl: "https://hotgayadm.vercel.app",
+  /** Public origin for canonical URLs, structured data and the sitemap. Edit src/data/site.json when the custom domain is live. */
+  siteUrl: site.siteUrl,
   telegramUrl: "https://beacons.ai/admhotgay",
   price: "9,99",
   videoCount: "800+",

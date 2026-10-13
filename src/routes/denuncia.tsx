@@ -3,7 +3,13 @@ import { ContactEmail, LegalPage } from "@/components/legal-page";
 import { BRAND } from "@/lib/brand";
 
 export const Route = createFileRoute("/denuncia")({
-  head: () => ({ meta: [{ title: `Denúncia e Remoção — ${BRAND.name}` }] }),
+  head: () => ({
+    meta: [
+      { title: `Denúncia e Remoção — ${BRAND.name}` },
+      { name: "description", content: `Denuncie conteúdo ou peça a remoção de um vídeo do ${BRAND.name}. Atendemos pedidos de direitos autorais e de pessoas retratadas.` },
+    ],
+    links: [{ rel: "canonical", href: `${BRAND.siteUrl}/denuncia` }],
+  }),
   component: Report,
 });
 

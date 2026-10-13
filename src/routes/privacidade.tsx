@@ -3,7 +3,13 @@ import { ContactEmail, LegalPage } from "@/components/legal-page";
 import { BRAND } from "@/lib/brand";
 
 export const Route = createFileRoute("/privacidade")({
-  head: () => ({ meta: [{ title: `Política de Privacidade — ${BRAND.name}` }] }),
+  head: () => ({
+    meta: [
+      { title: `Política de Privacidade — ${BRAND.name}` },
+      { name: "description", content: `Como o ${BRAND.name} trata os seus dados: o que coletamos, por quê e como pedir remoção.` },
+    ],
+    links: [{ rel: "canonical", href: `${BRAND.siteUrl}/privacidade` }],
+  }),
   component: Privacy,
 });
 
