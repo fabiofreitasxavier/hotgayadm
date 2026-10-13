@@ -1,19 +1,23 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { type ReactNode } from "react";
 import { CATALOG, CATEGORY_PAGES, findTag, ownFirst } from "@/data/catalog";
 import { useUploads } from "@/lib/uploads";
-import { VideoCard } from "@/components/video-card";
-import { CategoryNav } from "@/components/category-nav";
+import { VideoGrid } from "@/components/video-grid";
+import { PromoBanner } from "@/components/promo";
 import { BRAND } from "@/lib/brand";
-import { PromoHero, TelegramCard } from "@/components/telegram-cta";
 
-type Search = { q?: string; cat?: string };
+type Search = { q?: string; cat?: string; page?: number };
+
+/** Videos per page; page links are real <a href="/?page=2"> so crawlers can follow them. */
+const PAGE_SIZE = 60;
 
 export const Route = createFileRoute("/")({
   head: ({ match }) => {
-    const title = "HotGay — Prévia de vídeos gays exclusivos e comunidade privada";
+    const page = match.search.page ?? 1;
+    const base = "HotGay — Vídeos gays exclusivos, prévias grátis e comunidade no Telegram";
+    const title = page > 1 ? `Vídeos gays exclusivos — página ${page} | ${BRAND.name}` : base;
     const description =
       "Prévias gratuitas de vídeos gays exclusivos, atualizadas todos os dias. Veja os vídeos e entre na comunidade privada no Telegram com mais de 800 vídeos por R$ 9,99.";
+    const url = page > 1 ? `${BRAND.siteUrl}/?page=${page}` : `${BRAND.siteUrl}/`;
     // Search results and old ?cat= filters are thin duplicates of the home page: crawl them, don't index them.
     const filteredView = Boolean(match.search.q || match.search.cat);
     const meta = [
@@ -23,7 +27,7 @@ export const Route = createFileRoute("/")({
       { property: "og:type", content: "website" },
       { property: "og:title", content: title },
       { property: "og:description", content: description },
-      { property: "og:url", content: `${BRAND.siteUrl}/` },
+      { property: "og:url", content: url },
       { property: "og:image", content: `${BRAND.siteUrl}/logo.jpg` },
       { property: "og:locale", content: "pt_BR" },
       { property: "og:site_name", content: BRAND.name },
@@ -51,7 +55,8 @@ export const Route = createFileRoute("/")({
         {
           "@type": "ItemList",
           itemListElement: ownFirst(CATALOG)
-            .slice(0, 24)
+            .slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
+            .slice(0, 30)
             .map((v, i) => ({
               "@type": "ListItem",
               position: i + 1,
@@ -63,19 +68,23 @@ export const Route = createFileRoute("/")({
     };
     return {
       meta,
-      links: [{ rel: "canonical", href: `${BRAND.siteUrl}/` }],
+      links: [{ rel: "canonical", href: url }],
       scripts: [{ type: "application/ld+json", children: JSON.stringify(jsonLd) }],
     };
   },
-  validateSearch: (search: Record<string, unknown>): Search => ({
-    q: typeof search.q === "string" ? search.q : undefined,
-    cat: typeof search.cat === "string" ? search.cat : undefined,
-  }),
+  validateSearch: (search: Record<string, unknown>): Search => {
+    const page = Number(search.page);
+    return {
+      q: typeof search.q === "string" ? search.q : undefined,
+      cat: typeof search.cat === "string" ? search.cat : undefined,
+      page: Number.isInteger(page) && page > 1 ? page : undefined,
+    };
+  },
   component: Home,
 });
 
 function Home() {
-  const { q, cat } = Route.useSearch();
+  const { q, cat, page = 1 } = Route.useSearch();
   const mine = useUploads((s) => s.mine);
   // Uploads from this browser first, then our own previews (the pages that can rank), then embeds.
   const all = ownFirst([...mine, ...CATALOG]);
@@ -90,67 +99,126 @@ function Home() {
       (v.tags ?? []).some((t) => findTag(t)?.name.toLowerCase().includes(query));
     return catOk && textOk;
   });
-
-  // Keep the hero for the landing view; searches and category filters go straight to results.
-  const showHero = !q && !cat;
+  const pages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const current = Math.min(page, pages);
+  const visible = filtered.slice((current - 1) * PAGE_SIZE, current * PAGE_SIZE);
+  const landing = !q && !cat && current === 1;
 
   return (
-    <main className="mx-auto max-w-6xl px-4 py-6">
-      {showHero ? (
-        <div className="mb-10">
-          <PromoHero />
-        </div>
-      ) : null}
-
+    <main className="mx-auto max-w-7xl px-3 py-4">
       <div className="mb-3 flex items-baseline justify-between gap-4">
-        <h2 className="font-[family-name:var(--font-display)] text-2xl font-extrabold tracking-wide uppercase">
-          {q ? `Resultados para “${q}”` : "Vídeos gays exclusivos"}
-        </h2>
-        <p className="shrink-0 text-sm text-[var(--color-mute)]">
+        <h1 className="font-[family-name:var(--font-display)] text-xl font-extrabold tracking-wide uppercase sm:text-2xl">
+          {q
+            ? `Resultados para “${q}”`
+            : current > 1
+              ? `Vídeos gays exclusivos — página ${current}`
+              : "Vídeos gays exclusivos"}
+        </h1>
+        <p className="shrink-0 text-xs text-[var(--color-mute)] sm:text-sm">
           {filtered.length} {filtered.length === 1 ? "vídeo" : "vídeos"}
         </p>
       </div>
 
-      <CategoryNav />
-
       {filtered.length === 0 ? (
-        <div className="rounded-2xl border border-[var(--color-line)] bg-[var(--color-panel)] px-6 py-12 text-center">
-          <p className="font-[family-name:var(--font-display)] text-xl font-bold uppercase">Nada encontrado</p>
-          <p className="mt-1 text-sm text-[var(--color-mute)]">Tente outra palavra ou veja todos os vídeos.</p>
-          <Link to="/" className="mt-4 inline-block text-sm text-[var(--color-accent-hi)] underline">
+        <div className="rounded-lg border border-[var(--color-line)] bg-[var(--color-panel)] px-6 py-12 text-center">
+          <p className="font-[family-name:var(--font-display)] text-xl font-bold uppercase">
+            Nada encontrado
+          </p>
+          <p className="mt-1 text-sm text-[var(--color-mute)]">
+            Tente outra palavra ou veja todos os vídeos.
+          </p>
+          <Link
+            to="/"
+            className="mt-4 inline-block text-sm text-[var(--color-accent-hi)] underline"
+          >
             Ver todos os vídeos
           </Link>
         </div>
       ) : (
-        // The full (filtered) list is rendered so every video link is in the initial HTML for crawlers.
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {filtered.map((video, i) => (
-            <VideoSlot key={video.id} index={i}>
-              <VideoCard video={video} />
-            </VideoSlot>
-          ))}
-        </div>
+        // Every video link of the page is in the server HTML, so crawlers see the whole list.
+        <VideoGrid videos={visible} />
       )}
 
-      {showHero ? <AboutSite /> : null}
+      <PromoBanner variant={0} className="mt-8" />
+
+      {pages > 1 ? <Pager current={current} pages={pages} q={q} cat={cat} /> : null}
+
+      {landing ? <AboutSite /> : null}
     </main>
+  );
+}
+
+/** Numbered page links, tube-site style. */
+function Pager({
+  current,
+  pages,
+  q,
+  cat,
+}: {
+  current: number;
+  pages: number;
+  q?: string;
+  cat?: string;
+}) {
+  const item = "grid h-9 min-w-9 place-items-center rounded-md border px-3 text-sm ";
+  const to = (n: number) => ({ q, cat, page: n > 1 ? n : undefined });
+  return (
+    <nav aria-label="Páginas" className="mt-6 flex flex-wrap justify-center gap-2">
+      {current > 1 ? (
+        <Link
+          to="/"
+          search={to(current - 1)}
+          rel="prev"
+          className={item + "border-[var(--color-line)]"}
+        >
+          ← Anterior
+        </Link>
+      ) : null}
+      {Array.from({ length: pages }, (_, i) => i + 1).map((n) => (
+        <Link
+          key={n}
+          to="/"
+          search={to(n)}
+          aria-current={n === current ? "page" : undefined}
+          className={
+            item +
+            (n === current
+              ? "border-[var(--color-accent)] bg-[var(--color-accent)] font-semibold text-white"
+              : "border-[var(--color-line)] text-[var(--color-mute)] hover:border-[var(--color-accent)]")
+          }
+        >
+          {n}
+        </Link>
+      ))}
+      {current < pages ? (
+        <Link
+          to="/"
+          search={to(current + 1)}
+          rel="next"
+          className={item + "border-[var(--color-line)]"}
+        >
+          Próxima →
+        </Link>
+      ) : null}
+    </nav>
   );
 }
 
 /** A short, unique text block about the site, with links into every category page. */
 function AboutSite() {
   return (
-    <section className="mt-14 max-w-3xl text-[15px] leading-relaxed text-[var(--color-mute)]">
-      <h2 className="font-[family-name:var(--font-display)] text-xl font-bold text-[var(--color-bone)] uppercase">
+    <section className="mt-12 max-w-3xl text-sm leading-relaxed text-[var(--color-mute)]">
+      <h2 className="font-[family-name:var(--font-display)] text-lg font-bold text-[var(--color-bone)] uppercase">
         Sobre o {BRAND.name}
       </h2>
-      <p className="mt-3">
-        O {BRAND.name} publica prévias gratuitas de vídeos gays exclusivos, com conteúdo novo todos os dias. Assista aos
-        trechos aqui no site e, se gostar, entre na nossa comunidade privada no Telegram: são mais de{" "}
-        {BRAND.videoCount} vídeos completos por apenas R$ {BRAND.price}, sem cadastro e com acesso imediato.
+      <p className="mt-2">
+        O {BRAND.name} publica prévias gratuitas de vídeos gays exclusivos, com conteúdo novo todos
+        os dias. Assista aos trechos aqui no site e, se gostar, entre na nossa comunidade privada no
+        Telegram: são mais de {BRAND.videoCount} vídeos completos por apenas R$ {BRAND.price}, sem
+        cadastro e com acesso imediato.
       </p>
       {CATEGORY_PAGES.length ? (
-        <p className="mt-3">
+        <p className="mt-2">
           Navegue por categoria:{" "}
           {CATEGORY_PAGES.map(({ tag }, i) => (
             <span key={tag.slug}>
@@ -167,21 +235,10 @@ function AboutSite() {
           .
         </p>
       ) : null}
-      <p className="mt-3">
-        Todo o conteúdo é para maiores de 18 anos, e todas as pessoas retratadas tinham 18 anos ou mais no momento da
-        gravação.
+      <p className="mt-2">
+        Todo o conteúdo é para maiores de 18 anos, e todas as pessoas retratadas tinham 18 anos ou
+        mais no momento da gravação.
       </p>
     </section>
-  );
-}
-
-// Drops the Telegram card into the grid after the first row of videos.
-function VideoSlot({ index, children }: { index: number; children: ReactNode }) {
-  if (index !== 3) return <>{children}</>;
-  return (
-    <>
-      <TelegramCard />
-      {children}
-    </>
   );
 }

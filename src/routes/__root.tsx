@@ -4,6 +4,7 @@ import { PreviewHostBridge } from "@/components/preview-host-bridge";
 import { SiteHeader } from "@/components/site-header";
 import { AgeGate } from "@/components/age-gate";
 import { MobileCtaBar, SiteFooter } from "@/components/telegram-cta";
+import { PromoStrip } from "@/components/promo";
 import { BRAND } from "@/lib/brand";
 import appCss from "../styles.css?url";
 
@@ -13,8 +14,16 @@ export const Route = createRootRoute({
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
       { title: "HotGay — Vídeos gays exclusivos e comunidade privada" },
-      { name: "description", content: "Prévias gratuitas de vídeos gays exclusivos, atualizados todos os dias. Entre na comunidade privada no Telegram com mais de 800 vídeos por R$ 9,99." },
-      { name: "keywords", content: "vídeos gays, vídeo gay, hot gay, gay porn, prévias gay, conteúdo adulto gay, comunidade Telegram, vídeos exclusivos" },
+      {
+        name: "description",
+        content:
+          "Prévias gratuitas de vídeos gays exclusivos, atualizados todos os dias. Entre na comunidade privada no Telegram com mais de 800 vídeos por R$ 9,99.",
+      },
+      {
+        name: "keywords",
+        content:
+          "vídeos gays, vídeo gay, hot gay, gay porn, prévias gay, conteúdo adulto gay, comunidade Telegram, vídeos exclusivos",
+      },
       { name: "robots", content: "index, follow, max-image-preview:large, max-snippet:-1" },
       { name: "theme-color", content: "#08060c" },
       { name: "rating", content: "adult" },
@@ -45,6 +54,7 @@ export const Route = createRootRoute({
       <body className="min-h-screen font-[family-name:var(--font-sans)] antialiased">
         <PreviewHostBridge />
         <AuthProvider>
+          <PromoStrip />
           <SiteHeader />
           <Outlet />
           <SiteFooter />

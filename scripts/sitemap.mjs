@@ -25,6 +25,7 @@ const today = new Date().toISOString().slice(0, 10);
 // and a category is listed once it has MIN_CATEGORY_SIZE videos.
 const PREVIEWS_TAG = "previas-exclusivas";
 const MIN_CATEGORY_SIZE = 3;
+const HOME_PAGE_SIZE = 60;
 // Date in src/components/legal-page.tsx (LAST_UPDATED); bump both when the legal text changes.
 const LEGAL_UPDATED = "2026-10-10";
 
@@ -33,7 +34,12 @@ const tagsOf = (v) => {
   const own = (v.tags ?? []).filter((t) => known.has(t));
   return v.embedUrl ? own : [PREVIEWS_TAG, ...own.filter((t) => t !== PREVIEWS_TAG)];
 };
-const newest = (list) => list.map((v) => v.addedAt).filter(Boolean).sort().at(-1) || today;
+const newest = (list) =>
+  list
+    .map((v) => v.addedAt)
+    .filter(Boolean)
+    .sort()
+    .at(-1) || today;
 
 const categories = tags
   .map((t) => ({ tag: t, members: videos.filter((v) => tagsOf(v).includes(t.slug)) }))
@@ -41,24 +47,44 @@ const categories = tags
 
 const pages = [
   { path: "/", lastmod: newest(videos), priority: "1.0" },
-  ...categories.map((c) => ({ path: `/categoria/${c.tag.slug}`, lastmod: newest(c.members), priority: "0.8" })),
+  // Home pages 2..N (PAGE_SIZE in src/routes/index.tsx).
+  ...Array.from({ length: Math.max(0, Math.ceil(videos.length / HOME_PAGE_SIZE) - 1) }, (_, i) => ({
+    path: `/?page=${i + 2}`,
+    lastmod: newest(videos),
+    priority: "0.5",
+  })),
+  ...categories.map((c) => ({
+    path: `/categoria/${c.tag.slug}`,
+    lastmod: newest(c.members),
+    priority: "0.8",
+  })),
   // Embed pages are noindex (duplicates of the source site), so only our own previews are listed.
   ...videos
     .filter((v) => !v.embedUrl)
-    .map((v) => ({ path: `/watch/${v.id}`, lastmod: v.addedAt || today, priority: "0.7", video: v })),
+    .map((v) => ({
+      path: `/watch/${v.id}`,
+      lastmod: v.addedAt || today,
+      priority: "0.7",
+      video: v,
+    })),
   { path: "/termos", lastmod: LEGAL_UPDATED, priority: "0.2" },
   { path: "/privacidade", lastmod: LEGAL_UPDATED, priority: "0.2" },
   { path: "/denuncia", lastmod: LEGAL_UPDATED, priority: "0.2" },
 ];
 
 const esc = (t) => String(t).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-const seconds = (clock) => clock.split(":").map(Number).reduce((a, n) => a * 60 + n, 0);
+const seconds = (clock) =>
+  clock
+    .split(":")
+    .map(Number)
+    .reduce((a, n) => a * 60 + n, 0);
 
 /** Google video + image sitemap entries for one of our own previews (siblings inside <url>). */
 function mediaTags(v) {
   if (!v) return "";
   const title = v.title || "Prévia exclusiva";
-  const description = v.description || `${title}: prévia gratuita de vídeo gay exclusivo, para maiores de 18 anos.`;
+  const description =
+    v.description || `${title}: prévia gratuita de vídeo gay exclusivo, para maiores de 18 anos.`;
   return (
     "<video:video>" +
     `<video:thumbnail_loc>${MEDIA}/${v.id}.jpg</video:thumbnail_loc>` +

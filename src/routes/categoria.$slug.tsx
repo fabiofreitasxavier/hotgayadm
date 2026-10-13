@@ -1,9 +1,7 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
-import { Fragment } from "react";
 import { CATEGORY_PAGES, MIN_CATEGORY_SIZE, findTag, videosInTag } from "@/data/catalog";
-import { VideoCard } from "@/components/video-card";
-import { CategoryNav } from "@/components/category-nav";
-import { TelegramCard } from "@/components/telegram-cta";
+import { VideoGrid } from "@/components/video-grid";
+import { PromoBanner } from "@/components/promo";
 import { BRAND } from "@/lib/brand";
 
 /** Meta descriptions are cut around 155 characters; end on a word instead of mid-word. */
@@ -28,14 +26,18 @@ export const Route = createFileRoute("/categoria/$slug")({
       { title },
       { name: "description", content: description },
       // Too-small categories stay reachable but out of the index until they fill up.
-      ...(videos.length < MIN_CATEGORY_SIZE ? [{ name: "robots", content: "noindex, follow" }] : []),
+      ...(videos.length < MIN_CATEGORY_SIZE
+        ? [{ name: "robots", content: "noindex, follow" }]
+        : []),
       { property: "og:type", content: "website" },
       { property: "og:title", content: tag.title },
       { property: "og:description", content: description },
       { property: "og:url", content: url },
       { property: "og:locale", content: "pt_BR" },
       { property: "og:site_name", content: BRAND.name },
-      ...(/^https:\/\//.test(videos[0]?.poster ?? "") ? [{ property: "og:image", content: videos[0].poster }] : []),
+      ...(/^https:\/\//.test(videos[0]?.poster ?? "")
+        ? [{ property: "og:image", content: videos[0].poster }]
+        : []),
     ];
     const jsonLd = {
       "@context": "https://schema.org",
@@ -83,8 +85,8 @@ function Category() {
   const others = CATEGORY_PAGES.filter((c) => c.tag.slug !== slug);
 
   return (
-    <main className="mx-auto max-w-6xl px-4 py-6">
-      <nav aria-label="Navegação estrutural" className="text-sm text-[var(--color-mute)]">
+    <main className="mx-auto max-w-7xl px-3 py-4">
+      <nav aria-label="Navegação estrutural" className="text-xs text-[var(--color-mute)]">
         <Link to="/" className="hover:text-[var(--color-bone)]">
           Início
         </Link>
@@ -92,35 +94,29 @@ function Category() {
         <span>{tag.name}</span>
       </nav>
 
-      <header className="mt-3 mb-6">
-        <h1 className="font-[family-name:var(--font-display)] text-3xl font-extrabold tracking-wide uppercase sm:text-4xl">
-          {tag.title}
-        </h1>
-        <p className="mt-2 max-w-3xl text-[15px] leading-relaxed text-[var(--color-mute)]">{tag.intro}</p>
-        <p className="mt-2 text-sm text-[var(--color-mute)]">
-          {videos.length} {videos.length === 1 ? "vídeo" : "vídeos"}
+      <header className="mt-2 mb-4">
+        <div className="flex items-baseline justify-between gap-4">
+          <h1 className="font-[family-name:var(--font-display)] text-xl font-extrabold tracking-wide uppercase sm:text-2xl">
+            {tag.title}
+          </h1>
+          <p className="shrink-0 text-xs text-[var(--color-mute)] sm:text-sm">
+            {videos.length} {videos.length === 1 ? "vídeo" : "vídeos"}
+          </p>
+        </div>
+        <p className="mt-1 max-w-3xl text-sm leading-relaxed text-[var(--color-mute)]">
+          {tag.intro}
         </p>
       </header>
 
-      <CategoryNav active={slug} />
+      <VideoGrid videos={videos} />
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {videos.map((video, i) => (
-          <Fragment key={video.id}>
-            {i === 3 ? <TelegramCard /> : null}
-            <VideoCard video={video} />
-          </Fragment>
-        ))}
-      </div>
-      {videos.length <= 3 ? (
-        <div className="mt-4">
-          <TelegramCard />
-        </div>
-      ) : null}
+      <PromoBanner variant={2} className="mt-8" />
 
       {others.length ? (
-        <section className="mt-12">
-          <h2 className="font-[family-name:var(--font-display)] text-xl font-bold uppercase">Outras categorias</h2>
+        <section className="mt-10">
+          <h2 className="font-[family-name:var(--font-display)] text-lg font-bold uppercase">
+            Outras categorias
+          </h2>
           <ul className="mt-3 flex flex-wrap gap-x-5 gap-y-2 text-sm">
             {others.map(({ tag: t, count }) => (
               <li key={t.slug}>

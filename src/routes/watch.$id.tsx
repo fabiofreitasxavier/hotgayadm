@@ -4,9 +4,9 @@ import { useState } from "react";
 import { CATALOG, PREVIEWS_TAG, findTag, findVideo, type Tag, type Video } from "@/data/catalog";
 import { useUploads } from "@/lib/uploads";
 import { posterKey, useStoredMedia, videoKey } from "@/lib/video-store";
-import { VideoCard } from "@/components/video-card";
+import { VideoGrid } from "@/components/video-grid";
 import { NotFound } from "@/components/not-found";
-import { TelegramCard } from "@/components/telegram-cta";
+import { FullVideoCta, PromoTile } from "@/components/promo";
 import { BRAND } from "@/lib/brand";
 
 export const Route = createFileRoute("/watch/$id")({
@@ -28,7 +28,10 @@ export const Route = createFileRoute("/watch/$id")({
     const meta = [
       { title },
       { name: "description", content: description },
-      { name: "keywords", content: [video.title, ...tags.map((t) => t.name), "vídeo gay", BRAND.name].join(", ") },
+      {
+        name: "keywords",
+        content: [video.title, ...tags.map((t) => t.name), "vídeo gay", BRAND.name].join(", "),
+      },
       ...(video.embedUrl ? [{ name: "robots", content: "noindex, follow" }] : []),
       // Per-page share card; the platform head injector keeps these over its site-wide card.
       { property: "og:title", content: video.title },
@@ -37,7 +40,9 @@ export const Route = createFileRoute("/watch/$id")({
       { property: "og:type", content: "video.other" },
       { property: "og:locale", content: "pt_BR" },
       { property: "og:site_name", content: BRAND.name },
-      ...(/^https:\/\//.test(video.poster) ? [{ property: "og:image", content: video.poster }] : []),
+      ...(/^https:\/\//.test(video.poster)
+        ? [{ property: "og:image", content: video.poster }]
+        : []),
       ...(ownPreview
         ? [
             { property: "og:video", content: video.src },
@@ -64,7 +69,11 @@ export const Route = createFileRoute("/watch/$id")({
         inLanguage: "pt-BR",
         url,
         creator: { "@type": "Organization", name: BRAND.name },
-        publisher: { "@type": "Organization", name: BRAND.name, logo: { "@type": "ImageObject", url: `${BRAND.siteUrl}/logo.jpg` } },
+        publisher: {
+          "@type": "Organization",
+          name: BRAND.name,
+          logo: { "@type": "ImageObject", url: `${BRAND.siteUrl}/logo.jpg` },
+        },
         keywords: tags.map((t) => t.name).join(", ") || video.category,
       };
       const breadcrumb = {
@@ -157,7 +166,7 @@ function Watch() {
   const src = video.local ? storedSrc : video.src;
   const poster = video.poster || storedPoster || undefined;
 
-  // Most shared categories first, then the same category, then everything else, so "Up next"
+  // Most shared categories first, then the same category, then everything else, so "related"
   // stays on topic. Our own previews win ties because they are the pages that can rank.
   const mineTags = new Set(video.tags ?? []);
   const score = (v: Video) =>
@@ -168,109 +177,128 @@ function Watch() {
     .filter((v) => v.id !== video.id)
     .map((v, i) => ({ v, s: score(v), i }))
     .sort((a, b) => b.s - a.s || a.i - b.i)
-    .slice(0, 6)
+    .slice(0, 15)
     .map(({ v }) => v);
   const videoTags = (video.tags ?? []).map(findTag).filter((t): t is Tag => Boolean(t));
 
   return (
-    <main className="mx-auto grid max-w-6xl gap-8 px-4 py-6 lg:grid-cols-[minmax(0,1fr)_280px]">
-      <section>
-        {video.embedUrl ? (
-          // Played by the source site's own player; the file never touches our host.
-          <iframe
-            key={video.embedUrl}
-            src={video.embedUrl}
-            title={video.title}
-            allowFullScreen
-            referrerPolicy="strict-origin-when-cross-origin"
-            className="aspect-video w-full rounded-xl border-0 bg-black"
-          />
-        ) : src && failedSrc === src ? (
-          <div className="flex aspect-video w-full flex-col items-center justify-center gap-3 rounded-xl border border-[var(--color-line)] bg-black px-6 text-center">
-            <p className="font-[family-name:var(--font-display)] text-2xl font-bold uppercase">Prévia indisponível</p>
-            <p className="max-w-sm text-sm text-[var(--color-mute)]">
-              Não conseguimos carregar este vídeo agora. Tente novamente em alguns minutos ou escolha outra prévia.
-            </p>
-            <div className="flex gap-2">
-              <button
-                type="button"
-                onClick={() => setFailedSrc(null)}
-                className="rounded-full border border-[var(--color-line)] px-4 py-2 text-sm hover:border-[var(--color-accent)]"
-              >
-                Tentar de novo
-              </button>
-              <Link to="/" className="rounded-full bg-[var(--color-accent)] px-4 py-2 text-sm font-semibold text-white">
-                Ver outras prévias
-              </Link>
+    <main className="mx-auto max-w-7xl px-3 py-4">
+      <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_300px]">
+        <section>
+          {video.embedUrl ? (
+            // Played by the source site's own player; the file never touches our host.
+            <iframe
+              key={video.embedUrl}
+              src={video.embedUrl}
+              title={video.title}
+              allowFullScreen
+              referrerPolicy="strict-origin-when-cross-origin"
+              className="aspect-video w-full rounded-xl border-0 bg-black"
+            />
+          ) : src && failedSrc === src ? (
+            <div className="flex aspect-video w-full flex-col items-center justify-center gap-3 rounded-xl border border-[var(--color-line)] bg-black px-6 text-center">
+              <p className="font-[family-name:var(--font-display)] text-2xl font-bold uppercase">
+                Prévia indisponível
+              </p>
+              <p className="max-w-sm text-sm text-[var(--color-mute)]">
+                Não conseguimos carregar este vídeo agora. Tente novamente em alguns minutos ou
+                escolha outra prévia.
+              </p>
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => setFailedSrc(null)}
+                  className="rounded-full border border-[var(--color-line)] px-4 py-2 text-sm hover:border-[var(--color-accent)]"
+                >
+                  Tentar de novo
+                </button>
+                <Link
+                  to="/"
+                  className="rounded-full bg-[var(--color-accent)] px-4 py-2 text-sm font-semibold text-white"
+                >
+                  Ver outras prévias
+                </Link>
+              </div>
+            </div>
+          ) : src ? (
+            <video
+              key={src}
+              controls
+              playsInline
+              // Only fetch the file's header until the viewer presses play; saves CDN bandwidth.
+              preload="metadata"
+              poster={poster}
+              onError={() => setFailedSrc(src)}
+              className="aspect-video w-full rounded-xl bg-black"
+              src={src}
+            />
+          ) : (
+            <div className="flex aspect-video w-full items-center justify-center rounded-xl bg-black text-sm text-[var(--color-mute)]">
+              {src === undefined
+                ? "Carregando…"
+                : "Este arquivo não está mais salvo neste navegador."}
+            </div>
+          )}
+          <FullVideoCta preview={!video.embedUrl} />
+          <p className="mt-4 text-xs tracking-[0.16em] text-[var(--color-accent-hi)] uppercase">
+            {video.category}
+          </p>
+          <div className="mt-1 flex items-start justify-between gap-4">
+            <h1 className="font-[family-name:var(--font-display)] text-2xl font-bold sm:text-3xl">
+              {video.title}
+            </h1>
+            <div className="flex shrink-0 gap-2">
+              <CopyLinkButton />
+              {video.local ? (
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (!window.confirm(`Excluir "${video.title}" deste navegador?`)) return;
+                    remove(video.id);
+                    navigate({ to: "/" });
+                  }}
+                  className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-[var(--color-line)] px-3 py-1.5 text-sm text-[var(--color-mute)] hover:border-red-400 hover:text-red-400"
+                >
+                  <Trash2 className="size-4" />
+                  Excluir
+                </button>
+              ) : null}
             </div>
           </div>
-        ) : src ? (
-          <video
-            key={src}
-            controls
-            playsInline
-            // Only fetch the file's header until the viewer presses play; saves CDN bandwidth.
-            preload="metadata"
-            poster={poster}
-            onError={() => setFailedSrc(src)}
-            className="aspect-video w-full rounded-xl bg-black"
-            src={src}
-          />
-        ) : (
-          <div className="flex aspect-video w-full items-center justify-center rounded-xl bg-black text-sm text-[var(--color-mute)]">
-            {src === undefined ? "Carregando…" : "Este arquivo não está mais salvo neste navegador."}
-          </div>
-        )}
-        <p className="mt-4 text-xs tracking-[0.16em] text-[var(--color-accent)] uppercase">
-          {video.category}
-        </p>
-        <div className="mt-1 flex items-start justify-between gap-4">
-          <h1 className="font-[family-name:var(--font-display)] text-3xl font-bold">{video.title}</h1>
-          <div className="flex shrink-0 gap-2">
-            <CopyLinkButton />
-            {video.local ? (
-              <button
-                type="button"
-                onClick={() => {
-                  if (!window.confirm(`Excluir "${video.title}" deste navegador?`)) return;
-                  remove(video.id);
-                  navigate({ to: "/" });
-                }}
-                className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-[var(--color-line)] px-3 py-1.5 text-sm text-[var(--color-mute)] hover:border-red-400 hover:text-red-400"
-              >
-                <Trash2 className="size-4" />
-                Excluir
-              </button>
-            ) : null}
-          </div>
-        </div>
-        <p className="mt-2 text-sm text-[var(--color-mute)]">
-          {[video.creator, video.views && `${video.views} visualizações`, video.duration].filter(Boolean).join(" · ")}
-        </p>
-        <p className="mt-4 max-w-2xl text-[15px] leading-relaxed">{video.description}</p>
-        {videoTags.length ? (
-          <ul aria-label="Categorias" className="mt-4 flex flex-wrap gap-2">
-            {videoTags.map((t) => (
-              <li key={t.slug}>
-                <Link
-                  to="/categoria/$slug"
-                  params={{ slug: t.slug }}
-                  className="inline-block rounded-full border border-[var(--color-line)] px-3 py-1 text-sm text-[var(--color-mute)] hover:border-[var(--color-accent)] hover:text-[var(--color-bone)]"
-                >
-                  {t.name}
-                </Link>
-              </li>
-            ))}
-          </ul>
-        ) : null}
+          <p className="mt-2 text-sm text-[var(--color-mute)]">
+            {[video.creator, video.views && `${video.views} visualizações`, video.duration]
+              .filter(Boolean)
+              .join(" · ")}
+          </p>
+          <p className="mt-4 max-w-2xl text-[15px] leading-relaxed">{video.description}</p>
+          {videoTags.length ? (
+            <ul aria-label="Categorias" className="mt-4 flex flex-wrap gap-2">
+              {videoTags.map((t) => (
+                <li key={t.slug}>
+                  <Link
+                    to="/categoria/$slug"
+                    params={{ slug: t.slug }}
+                    className="inline-block rounded-full border border-[var(--color-line)] px-3 py-1 text-sm text-[var(--color-mute)] hover:border-[var(--color-accent)] hover:text-[var(--color-bone)]"
+                  >
+                    {t.name}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          ) : null}
+        </section>
+        {/* Right column on wide screens, like a tube site's side ads. */}
+        <aside className="hidden space-y-5 lg:block">
+          <PromoTile variant={0} />
+          <PromoTile variant={2} />
+        </aside>
+      </div>
+      <section className="mt-8">
+        <h2 className="mb-3 font-[family-name:var(--font-display)] text-lg font-bold uppercase">
+          Vídeos relacionados
+        </h2>
+        <VideoGrid videos={related} />
       </section>
-      <aside className="space-y-3">
-        <TelegramCard />
-        <h2 className="pt-2 text-sm text-[var(--color-mute)]">A seguir</h2>
-        {related.map((item) => (
-          <VideoCard key={item.id} video={item} />
-        ))}
-      </aside>
     </main>
   );
 }

@@ -14,12 +14,8 @@ export function VideoCard({ video }: { video: Video }) {
   const duration = video.duration || probedDuration;
 
   return (
-    <Link
-      to="/watch/$id"
-      params={{ id: video.id }}
-      className="group block overflow-hidden rounded-xl border border-[var(--color-line)] bg-[var(--color-panel)] transition hover:border-[var(--color-accent)]/60 hover:shadow-[var(--glow)]"
-    >
-      <div className="relative aspect-video bg-black">
+    <Link to="/watch/$id" params={{ id: video.id }} className="group block">
+      <div className="relative aspect-video overflow-hidden rounded-md bg-black ring-[var(--color-accent)] transition group-hover:ring-2">
         {poster && failed !== poster ? (
           <img
             src={poster}
@@ -46,19 +42,26 @@ export function VideoCard({ video }: { video: Video }) {
           </div>
         )}
         {video.source ? (
-          <span className="absolute top-2 left-2 rounded bg-black/75 px-1.5 py-0.5 text-[11px] text-[var(--color-mute)]">
+          <span className="absolute top-1.5 left-1.5 rounded bg-black/75 px-1.5 py-0.5 text-[10px] text-[var(--color-mute)]">
             via {video.source}
+          </span>
+        ) : !video.local ? (
+          // Our own previews: the full version is the Telegram offer.
+          <span className="absolute top-1.5 left-1.5 rounded bg-[var(--color-accent)] px-1.5 py-0.5 text-[10px] font-bold tracking-wide text-white uppercase">
+            Exclusivo
           </span>
         ) : null}
         {duration ? (
-          <span className="absolute right-2 bottom-2 rounded bg-black/75 px-1.5 py-0.5 text-xs">{duration}</span>
+          <span className="absolute right-1.5 bottom-1.5 rounded bg-black/80 px-1.5 py-0.5 text-[11px] font-semibold">
+            {duration}
+          </span>
         ) : null}
       </div>
-      <div className="space-y-1 p-3">
-        <h3 className="line-clamp-2 text-sm font-medium group-hover:text-[var(--color-accent)]">
+      <div className="pt-1.5">
+        <h3 className="line-clamp-2 text-sm leading-snug font-medium group-hover:text-[var(--color-accent-hi)]">
           {video.title}
         </h3>
-        <p className="text-xs text-[var(--color-mute)]">
+        <p className="mt-0.5 text-xs text-[var(--color-mute)]">
           {video.creator}
           {video.views ? ` · ${video.views} visualizações` : ""}
         </p>
