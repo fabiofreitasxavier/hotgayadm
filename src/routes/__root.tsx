@@ -1,3 +1,4 @@
+import { Analytics } from "@vercel/analytics/react";
 import { createRootRoute, HeadContent, Outlet, Scripts } from "@tanstack/react-router";
 import { AuthProvider } from "@/lib/auth/provider";
 import { PreviewHostBridge } from "@/components/preview-host-bridge";
@@ -61,6 +62,7 @@ export const Route = createRootRoute({
           <MobileCtaBar />
           <AgeGate />
         </AuthProvider>
+        <Analytics />
         <Scripts />
       </body>
     </html>

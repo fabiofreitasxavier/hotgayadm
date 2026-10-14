@@ -2,7 +2,7 @@ import { Link } from "@tanstack/react-router";
 import type { ReactNode } from "react";
 import { BRAND } from "@/lib/brand";
 
-export const LAST_UPDATED = "10 de outubro de 2026";
+export const LAST_UPDATED = "13 de outubro de 2026";
 
 export function LegalPage({ title, children }: { title: string; children: ReactNode }) {
   return (

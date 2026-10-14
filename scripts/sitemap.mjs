@@ -29,7 +29,7 @@ const PREVIEWS_TAG = "previas-exclusivas";
 const MIN_CATEGORY_SIZE = 3;
 const HOME_PAGE_SIZE = 60;
 // Date in src/components/legal-page.tsx (LAST_UPDATED); bump both when the legal text changes.
-const LEGAL_UPDATED = "2026-10-10";
+const LEGAL_UPDATED = "2026-10-13";
 
 const known = new Set(tags.map((t) => t.slug));
 const tagsOf = (v) => {
