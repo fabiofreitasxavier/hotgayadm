@@ -42,8 +42,7 @@ function Privacy() {
         endereço IP, navegador e horário) para entregar as páginas e proteger o serviço contra abusos.
       </p>
       <p>
-        O Vercel Web Analytics conta páginas visitadas (página, país aproximado, aparelho e origem do clique). Não
-        identifica você pelo nome e não usa cookies de publicidade.
+        O Vercel Web Analytics conta páginas visitadas (página, país aproximado, aparelho e origem do clique). O Speed Insights mede o tempo de carregamento da página. Nenhum dos dois identifica você pelo nome nem usa cookies de publicidade.
       </p>
 
       <h2>4. Serviços de terceiros</h2>
